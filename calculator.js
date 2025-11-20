@@ -60,10 +60,26 @@ function toggleContent(contentId) {
     }
 }
 
-// V2.15 新增：動態新增一組成本輸入框
-function addCostInput(jpyAmount = 50000, rate = 0.1989) {
+/**
+ * V2.17 修正：動態新增一組成本輸入框
+ * @param {number} jpyAmount 日圓金額預設值
+ * @param {number} rate 買進成本預設值
+ * @param {boolean} isDefault 是否為初始的第一筆紀錄
+ */
+function addCostInput(jpyAmount = 50000, rate = 0.1989, isDefault = false) {
     const container = document.getElementById('costInputsContainer');
     const id = costInputCounter++;
+
+    // 只有在新增第一筆時，才需要先插入標題
+    if (isDefault) {
+        container.innerHTML = `
+            <div class="cost-input-header">
+                <span class="label-jpy">日圓金額 (¥)</span>
+                <span class="label-rate">買進成本 (NTD/JPY)</span>
+                <span style="width: 30px;"></span>
+            </div>
+        `;
+    }
     
     const div = document.createElement('div');
     div.className = 'cost-input-row';
@@ -76,7 +92,7 @@ function addCostInput(jpyAmount = 50000, rate = 0.1989) {
     amountInput.step = 1;
     amountInput.min = 0;
     amountInput.className = 'cost-jpy-amount label-jpy';
-    amountInput.addEventListener('input', calculateCost);
+    amountInput.addEventListener('input', calculateCost); 
 
     // 買進成本輸入框 (NTD/JPY)
     const rateInput = document.createElement('input');
@@ -84,36 +100,60 @@ function addCostInput(jpyAmount = 50000, rate = 0.1989) {
     rateInput.value = rate;
     rateInput.step = 0.0001;
     rateInput.className = 'cost-rate-value label-rate';
-    rateInput.addEventListener('input', calculateCost);
+    rateInput.addEventListener('input', calculateCost); 
 
     // 刪除按鈕
     const removeButton = document.createElement('button');
     removeButton.innerHTML = '&times;';
     removeButton.title = '刪除此筆紀錄';
+    removeButton.className = 'remove-btn'; // 使用新 class 確保樣式一致
     removeButton.onclick = () => removeCostInput(id);
 
     div.appendChild(amountInput);
     div.appendChild(rateInput);
     div.appendChild(removeButton);
     
+    // V2.17 修正：只有在有多筆紀錄時，刪除按鈕才應該可見。預設的第一筆應該隱藏
+    const currentRecords = container.querySelectorAll('.cost-input-row').length;
+    if (isDefault) {
+        // 第一筆預設的紀錄，不應該顯示刪除按鈕
+        removeButton.style.visibility = 'hidden'; 
+    } else {
+        // 新增的紀錄，可以被刪除
+        removeButton.style.visibility = 'visible';
+    }
+    
     container.appendChild(div);
 
     // 每次新增後立即計算
-    calculateCost();
+    calculateCost(); 
 }
 
-// V2.15 新增：移除一組成本輸入框
+// V2.15/V2.17 修正：移除一組成本輸入框
 function removeCostInput(id) {
     const row = document.getElementById(`cost-row-${id}`);
-    if (row) {
+    const container = document.getElementById('costInputsContainer');
+    const rows = container.querySelectorAll('.cost-input-row');
+    
+    // 確保至少保留一筆紀錄
+    if (row && rows.length > 1) { 
         row.remove();
         calculateCost(); // 移除後重新計算
+        
+        // V2.17: 如果只剩下一筆，隱藏它的刪除按鈕
+        const remainingRows = container.querySelectorAll('.cost-input-row');
+        if (remainingRows.length === 1) {
+             remainingRows[0].querySelector('.remove-btn').style.visibility = 'hidden';
+        }
+
+    } else if (rows.length === 1) {
+        alert("必須至少保留一筆日圓買入成本紀錄。");
     }
 }
 
 /**
- * V2.15 新增：計算所有買入紀錄的加權平均成本。
- * @returns {object} {averageCost: number, totalJPY: number}
+ * V2.17 修正：計算所有買入紀錄的加權平均成本，並根據筆數調整顯示名稱。
+ * @returns {object} {averageCost: number, totalJPY: number, recordCount: number}
  */
 function getAverageCost() {
     const jpyInputs = document.querySelectorAll('.cost-jpy-amount');
@@ -139,20 +179,31 @@ function getAverageCost() {
 
     const averageCost = totalJPY > 0 ? (totalNTD / totalJPY) : NaN;
     
-    // 更新平均成本顯示區塊
+    // 動態調整標題
+    const titleElement = document.getElementById('costInputTitle');
     const displayElement = document.getElementById('averageCostDisplay');
+    let costTitle = "單一買進成本";
+    
+    if (validRecords > 1) {
+        costTitle = "加權平均成本";
+        titleElement.innerHTML = `日圓買入成本紀錄 (分批買入計算**加權平均成本**) <span class="default-hint">(請輸入您手上所有日圓的買入紀錄)</span>`;
+    } else {
+        costTitle = "單一買進成本";
+        titleElement.innerHTML = `日圓買入成本紀錄 (預設單一成本) <span class="default-hint">(如有多筆，請按下方按鈕新增)</span>`;
+    }
+
     if (validRecords > 0) {
-        // V2.15: 顯示總買進日圓金額和平均成本
+        // V2.17: 顯示總買進日圓金額和平均成本
         displayElement.innerHTML = `
             總買入日圓：${formatCurrency(totalJPY, '¥')} | 
-            **加權平均成本**：<span style="color:#cc0000;">${averageCost.toFixed(6)}</span> NTD/JPY
+            **${costTitle}**：<span style="color:#cc0000;">${averageCost.toFixed(6)}</span> NTD/JPY
         `;
     } else {
         displayElement.innerHTML = `請新增有效的日圓買入紀錄`;
     }
 
-    // 回傳平均成本 (NaN 需在核心計算中處理)
-    return { averageCost, totalJPY };
+    // 回傳結果
+    return { averageCost, totalJPY, recordCount: validRecords, costTitle };
 }
 
 
@@ -185,7 +236,6 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
         const savings = externalCost - richartExpense;
         const diffClass = savings >= 0 ? 'positive-diff' : 'negative-diff';
         
-        // V2.14：日圓和台幣都使用 formatCurrency，會自動移除小數點
         tableHtml += `
             <tr>
                 <td>${formatCurrency(amount, '¥')}</td> 
@@ -201,7 +251,7 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
     // V2.15 修正：顯示計算所使用的加權平均成本
     quickDifferenceElement.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【不同金額差價速算 (手續費攤提影響)】</p>
-        <p style="font-size:0.8em;">(使用匯率：加權平均成本 **${cost.toFixed(6)}** / 即期 **${spotRate.toFixed(4)}** / 現鈔 **${cashRate.toFixed(4)}**)</p>
+        <p style="font-size:0.8em;">(使用匯率：平均成本 **${cost.toFixed(6)}** / 即期 **${spotRate.toFixed(4)}** / 現鈔 **${cashRate.toFixed(4)}**)</p>
         ${tableHtml}
     `;
 }
@@ -214,8 +264,8 @@ function calculateCost() {
     const cashRate = parseFloat(document.getElementById('cashRate').value);
     const compareRate = parseFloat(document.getElementById('compareRate').value); 
     
-    // V2.15 變更：取得加權平均成本
-    const { averageCost: cost, totalJPY: totalJPY } = getAverageCost();
+    // V2.17 變更：取得加權平均成本及其名稱
+    const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost();
     
     const resultsContainer = document.getElementById('resultsContainer');
     const detailCalculation = document.getElementById('detailCalculation');
@@ -230,8 +280,13 @@ function calculateCost() {
         return;
     }
 
-    // 確保速算區塊被顯示
-    quickDifference.style.display = document.getElementById('toggleQuickBtn').innerText.includes('隱藏') ? 'block' : 'none';
+    // 確保速算區塊的顯示狀態
+    const toggleBtn = document.getElementById('toggleQuickBtn');
+    if(toggleBtn && toggleBtn.innerText.includes('隱藏')) {
+        quickDifference.style.display = 'block';
+    } else {
+        quickDifference.style.display = 'none';
+    }
 
 
     // --- Richart 手續費計算 ---
@@ -252,7 +307,6 @@ function calculateCost() {
     }
 
     // --- Richart 總成本計算 ---
-    // V2.15 變更：使用加權平均成本
     const totalOriginalCost = amount * cost; 
     const totalExpense = totalOriginalCost + actualFee;
     const totalCostPerUnit = totalExpense / amount;
@@ -271,10 +325,10 @@ function calculateCost() {
     `;
 
     // 7. 更新詳細計算過程
-    // V2.15 變更：強調使用加權平均成本
+    // V2.17 變更：使用動態成本標題
     detailCalculation.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】</p>
-        <p>1. **加權平均買入成本**： <span class="final-cost">${cost.toFixed(6)}</span> 台幣/日圓</p>
+        <p>1. **${costTitle}**： <span class="final-cost">${cost.toFixed(6)}</span> 台幣/日圓</p>
         <p>2. 原始換匯成本： ${formatCurrency(amount, '¥')} × ${cost.toFixed(6)} (平均成本) = ${formatCurrency(totalOriginalCost, 'NT$')}</p>
         <p>3. 匯率差額： ${spotRate.toFixed(4)} (即期賣) - ${cashRate.toFixed(4)} (現鈔賣) = ${(spotRate - cashRate).toFixed(4)}</p>
         <p>4. **初算手續費**： ${formatCurrency(amount, '¥')} × ${(spotRate - cashRate).toFixed(4)} × 0.5 = <span class="result-value">${formatCurrency(feePreliminary, 'NT$')}</span></p>
@@ -298,13 +352,14 @@ function copyResults() {
     const detailCalculation = document.getElementById('detailCalculation');
     const quickDifference = document.getElementById('quickDifference');
     const disclaimer = document.getElementById('disclaimer'); 
-    const { averageCost: cost, totalJPY: totalJPY } = getAverageCost(); // V2.15 取得平均成本
+    // V2.17 取得加權平均成本及其名稱
+    const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost(); 
     
     // 更新複製內容中的版本資訊
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.15) 版權所有@gemini 設計者 zeroffa ---\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.17) 版權所有@gemini 設計者 zeroffa ---\n` +
                      `提領日圓金額: ${formatCurrency(parseFloat(document.getElementById('amount').value), '¥')}\n` +
-                     `總買入日圓金額: ${formatCurrency(totalJPY, '¥')}\n` + // V2.15 新增
-                     `**加權平均買進成本**: ${cost.toFixed(6)} NTD/JPY\n` + // V2.15 變更
+                     `總買入日圓金額: ${formatCurrency(totalJPY, '¥')}\n` + 
+                     `**${costTitle}**: ${cost.toFixed(6)} NTD/JPY\n` + // V2.17 變更
                      `即期匯率: ${document.getElementById('spotRate').value} / 現鈔匯率: ${document.getElementById('cashRate').value}\n` +
                      `外部結匯比較匯率 (Easy購/其他): ${document.getElementById('compareRate').value} NTD/JPY\n` +
                      `================================\n` +
@@ -337,7 +392,9 @@ function copyResults() {
 window.copyResults = copyResults;
 window.toggleContent = toggleContent; 
 window.setAmount = setAmount; 
-window.addCostInput = addCostInput; // V2.15 新增
+window.addCostInput = addCostInput;
+window.removeCostInput = removeCostInput; 
+
 
 // 設定即時監聽事件
 function setupEventListeners() {
@@ -350,9 +407,12 @@ function setupEventListeners() {
         }
     });
 
-    // V2.15：頁面載入時，預設新增一筆買入紀錄
-    addCostInput(250000, 0.1989); 
+    // V2.17 修正：載入時，新增預設的第一筆成本紀錄
+    if (costInputCounter === 0) { 
+        addCostInput(250000, 0.1989, true); // true 表示這是預設的第一筆
+    }
     
+    // 初始計算會在 addCostInput 內部調用，這裡再次呼叫確保所有欄位都被初始化
     calculateCost();
 }
 
