@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Richart 外幣 ATM  提領成本計算計算</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; }
+        label, input, button { display: block; margin-bottom: 10px; }
+        input[type="number"] { width: 100%; padding: 8px; box-sizing: border-box; }
+        .result { margin-top: 20px; padding: 15px; background-color: #f0f8ff; border: 1px solid #b0e0e6; border-left: 5px solid #1e90ff; }
+        strong { color: #cc0000; }
+        .default-value { color: #666; font-size: 0.9em; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <h2>💰 Richart 日圓提領成本計算機</h2>
+    <p>計算提領日圓現鈔的實際手續費及攤提後總成本 (NT$/JPY)。</p>
+
+    <div class="default-value">預設值：260000 JPY</div>
+    <label for="amount">提領日圓金額 (JPY)：</label>
+    <input type="number" id="amount" value="260000">
+
+    <div class="default-value">預設值：0.1989 NTD/JPY (您的成本)</div>
+    <label for="cost">原始買進成本 (NTD/JPY)：</label>
+    <input type="number" id="cost" value="0.1989" step="0.0001">
+
+    <div class="default-value">預設值：0.2003 NTD/JPY</div>
+    <label for="spotRate">提領日即期匯率 (牌告賣出) *：</label>
+    <input type="number" id="spotRate" value="0.2003" step="0.0001">
+
+    <div class="default-value">預設值：0.1995 NTD/JPY</div>
+    <label for="cashRate">提領日現鈔匯率 (牌告賣出) *：</label>
+    <input type="number" id="cashRate" value="0.1995" step="0.0001">
+    
+    <div class="default-value">預設值：0.2021 NTD/JPY (台銀線上結匯比較基準)</div>
+    <label for="compareRate">外部結匯比較匯率 (例如台銀)：</label>
+    <input type="number" id="compareRate" value="0.2021" step="0.0001">
+
+    <button onclick="calculateCost()">點擊計算</button>
+
+    <div class="result">
+        <h3>計算結果 (手續費公式：(即期 - 現鈔) × 0.5，最低 100 元)</h3>
+        <p>實際提領手續費：<strong id="feeResult"></strong> 台幣</p>
+        <p>納入手續費後，日圓**單位總成本**：<strong id="totalCostPerUnit"></strong> NTD/JPY</p>
+        <hr>
+        <p>外部結匯總成本 ($<span id="externalRate"></span>)：<strong id="externalCost"></strong> 台幣</p>
+        <p><strong> Richart 提領節省金額：<strong id="savings"></strong> 台幣</strong></p>
+    </div>
+
+    <script src="calculator.js"></script>
+    <p style="font-size:0.8em; color:#888;">* 請以台新銀行當日牌告賣出匯率為準。</p>
+</body>
+</html>
