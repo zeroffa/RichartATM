@@ -142,11 +142,11 @@
             background-color: #fff; padding: 10px; margin-top: 15px; border: 1px dashed #ccc; border-radius: 4px; font-size: 0.9em; line-height: 1.6; 
         }
         
-        /* V2.12 修正：速算區塊設置水平滾動條，防止表格溢位 */
+        /* V2.14 修正：移除 overflow-x: auto; 讓文字可以換行以適應手機畫面 */
         #quickDifference { 
             background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; 
             display: none; 
-            overflow-x: auto; /* 核心修正：當內容超出時顯示水平捲軸 */
+            /* 移除 overflow-x: auto; */
         }
         
         /* 摺疊/展開 樣式 */
@@ -163,16 +163,22 @@
             width: 100%; 
             border-collapse: collapse; 
             margin-top: 5px; 
-            white-space: nowrap; /* 確保表格內容不被換行 */
+            /* V2.14 修正：移除 white-space: nowrap; 讓文字可以換行 */
         }
         #quickDifference th, #quickDifference td { 
-            padding: 4px 8px; 
+            padding: 4px 5px; /* 縮小邊距 */
             text-align: right; 
             border-bottom: 1px solid #f0f0f0; 
+            word-wrap: break-word; /* 允許數字換行 */
         }
         #quickDifference th:first-child, #quickDifference td:first-child { 
             text-align: left; 
         }
+        /* V2.14 修正：讓表頭文字可以換行 */
+        #quickDifference th {
+            line-height: 1.2;
+        }
+
         #quickDifference .negative-diff { color: #fa541c; font-weight: bold; }
         #quickDifference .positive-diff { color: #4CAF50; font-weight: bold; }
 
@@ -254,7 +260,8 @@
 
             <p style="font-weight:bold; margin-bottom: 5px; margin-top: 15px;">
                 不同金額差價速算 (手續費攤提影響)
-                <span style="font-weight:normal; color:#cc0000; font-size:0.9em;">(結果已四捨五入至整數)</span> <span id="toggleQuickBtn" class="toggle-btn" onclick="toggleContent('quickDifference')">點此顯示/隱藏</span>
+                <span style="font-weight:normal; color:#cc0000; font-size:0.9em;">(結果已四捨五入至整數)</span> 
+                <span id="toggleQuickBtn" class="toggle-btn" onclick="toggleContent('quickDifference')">點此顯示/隱藏</span>
             </p>
             <div id="quickDifference">
                 </div>
@@ -278,7 +285,7 @@
     </div>
 
     <div class="version-info">
-        Version: 2.13 (台幣金額四捨五入至整數並新增提示) 版權所有@gemini 設計者 zeroffa
+        Version: 2.14 (速算表格移除小數點和捲軸) 版權所有@gemini 設計者 zeroffa
     </div>
 
     <script src="calculator.js"></script>
