@@ -11,7 +11,7 @@ function calculateUnitCost(amount, cost, spotRate, cashRate) {
     return totalExpense;
 }
 
-// **【V2.0 新增】** 切換內容顯示/隱藏的函數
+// 切換內容顯示/隱藏的函數
 function toggleContent(contentId) {
     const content = document.getElementById(contentId);
     
@@ -102,7 +102,6 @@ function calculateCost() {
     let feeDifferenceText = '';
     if (actualFee === MIN_FEE) {
         const difference = MIN_FEE - feePreliminary;
-        // **【V2.0 修正】** 強化價差提示
         feeDifferenceText = `被多收的價差：${difference.toFixed(2)} 台幣`;
         feeNoteDetail = `<p style="margin-left: 10px; color:#cc0000; font-weight:bold;">→ 初算金額 ${feePreliminary.toFixed(2)} 台幣低於 $${MIN_FEE} 台幣，故被收最低手續費。 (${feeDifferenceText})</p>`;
     }
@@ -151,19 +150,24 @@ function copyResults() {
     const resultsContainer = document.getElementById('resultsContainer');
     const detailCalculation = document.getElementById('detailCalculation');
     const quickDifference = document.getElementById('quickDifference');
-    const disclaimer = document.getElementById('disclaimer');
+    // 只抓取上方的主要 disclaimer
+    const disclaimer = document.getElementById('disclaimer'); 
     
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.0) ---\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.4) ---\n` +
                      `提領日圓金額: ${document.getElementById('amount').value} JPY\n` +
                      `原始買進成本: ${document.getElementById('cost').value} NTD/JPY\n` +
                      `即期匯率: ${document.getElementById('spotRate').value} / 現鈔匯率: ${document.getElementById('cashRate').value}\n` +
                      `台銀 Easy購比較匯率: ${document.getElementById('compareRate').value} NTD/JPY\n` +
                      `================================\n` +
+                     disclaimer.innerText + '\n' + 
                      resultsContainer.innerText;
 
     // 無論是否摺疊，都複製詳細內容
     fullText += '\n\n【詳細計算過程】\n' + detailCalculation.innerText + '\n\n' + quickDifference.innerText;
-    fullText += '\n\n' + disclaimer.innerText;
+    
+    // 在底部再加一次免責聲明 (讓複製的文字檔更完整)
+    fullText += '\n\n--- 頁尾免責聲明 ---\n' + disclaimer.innerText; 
+
 
     if (navigator.clipboard) {
         navigator.clipboard.writeText(fullText)
