@@ -3,7 +3,7 @@ const QUICK_AMOUNTS = [1000, 5000, 10000, 50000, 100000, 200000, 300000, 500000,
 const MIN_FEE = 100; // 最低手續費
 
 /**
- * V2.13 修正：格式化數字為貨幣字串，NT$ 進行四捨五入到整數。
+ * V2.14 修正：格式化數字為貨幣字串，NT$ 和 ¥ 都只顯示整數 (NT$ 四捨五入)。
  * @param {number} number 待格式化的數字
  * @param {string} currencySymbol 貨幣符號 (例如: '¥', '$', 'NT$')
  * @returns {string} 格式化後的字串
@@ -11,18 +11,23 @@ const MIN_FEE = 100; // 最低手續費
 function formatCurrency(number, currencySymbol) {
     if (isNaN(number)) return '';
     
-    let formattedNumber;
+    let displayValue;
     
-    // 如果是台幣 (NT$)，四捨五入到整數
+    // 如果是台幣 (NT$)，四捨五入到整數，並格式化千分位
     if (currencySymbol === 'NT$') {
-        // 先四捨五入到整數，然後再格式化千分位
-        formattedNumber = Math.round(number).toLocaleString('zh-TW');
-    } else {
-        // 其他幣別 (如日圓 ¥)，維持小數點兩位，並格式化千分位
-        formattedNumber = number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        displayValue = Math.round(number).toLocaleString('zh-TW');
+    } 
+    // 如果是日圓 (¥)，顯示整數，並格式化千分位
+    else if (currencySymbol === '¥') {
+        // 直接取整數部分 (日圓提領通常是整數張數，不需四捨五入，但為了展示方便，這裡採用 Math.round)
+        displayValue = Math.round(number).toLocaleString('zh-TW');
+    }
+    // 其他幣別 (維持 V2.13 做法，保留兩位小數)
+    else {
+        displayValue = number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
-    return `${currencySymbol}${formattedNumber}`;
+    return `${currencySymbol}${displayValue}`;
 }
 
 /**
@@ -66,13 +71,14 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
             <thead>
                 <tr>
                     <th>提領金額 (日圓)</th>
-                    <th>Richart 總支出 (台幣)</th>
-                    <th>台銀 Easy購總成本 (台幣)</th>
+                    <th>Richart 總支出</th>
+                    <th>台銀 Easy購總成本</th>
                     <th>差價 (節省金額)</th>
                 </tr>
             </thead>
             <tbody>
     `;
+    // V2.14 修正：簡化表格標題，讓手機畫面能容納
 
     QUICK_AMOUNTS.forEach(amount => {
         const richartExpense = calculateUnitCost(amount, cost, spotRate, cashRate);
@@ -80,10 +86,10 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
         const savings = externalCost - richartExpense;
         const diffClass = savings >= 0 ? 'positive-diff' : 'negative-diff';
         
-        // V2.13：日圓仍維持無小數位，台幣使用四捨五入
+        // V2.14：日圓和台幣都使用 formatCurrency，會自動移除小數點
         tableHtml += `
             <tr>
-                <td>${formatCurrency(amount, '¥').replace('.00', '')}</td> 
+                <td>${formatCurrency(amount, '¥')}</td> 
                 <td>${formatCurrency(richartExpense, 'NT$')}</td>
                 <td>${formatCurrency(externalCost, 'NT$')}</td>
                 <td class="${diffClass}">${formatCurrency(savings, 'NT$')}</td>
@@ -135,7 +141,7 @@ function calculateCost() {
     let feeNoteDetail = ``;
     if (actualFee === MIN_FEE) {
         const difference = MIN_FEE - feePreliminary;
-        // V2.9 修正: 用語從「被收」改為「會收」
+        // V2.13: formatCurrency 會自動四捨五入到整數
         feeNoteDetail = `<p style="margin-left: 10px; color:#cc0000; font-weight:bold;">→ 初算金額 ${formatCurrency(feePreliminary, 'NT$')} 低於 NT$${MIN_FEE}，故會收最低手續費。 (被多收 ${formatCurrency(difference, 'NT$')})</p>`;
     }
 
@@ -149,7 +155,7 @@ function calculateCost() {
     const savings = externalCost - totalExpense;
 
     // 6. 更新簡要結果
-    // V2.13: formatCurrency 已將 NT$ 四捨五入
+    // V2.13/V2.14: formatCurrency 已將 NT$ 四捨五入
     resultsContainer.innerHTML = `
         <p>實際提領手續費：<span class="result-value">${formatCurrency(actualFee, 'NT$')}</span> ${feeNoteSimple}</p>
         <p>納入手續費後，日圓**單位總成本**：<span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
@@ -159,19 +165,19 @@ function calculateCost() {
     `;
 
     // 7. 更新詳細計算過程
-    // V2.13: formatCurrency 已將 NT$ 四捨五入
+    // V2.13/V2.14: formatCurrency 已將 NT$ 四捨五入，¥ 移除小數點
     detailCalculation.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】</p>
-        <p>1. 原始換匯成本： ${formatCurrency(amount, '¥').replace('.00', '')} × ${cost.toFixed(4)} 台幣/日圓 = ${formatCurrency(totalOriginalCost, 'NT$')}</p>
+        <p>1. 原始換匯成本： ${formatCurrency(amount, '¥')} × ${cost.toFixed(4)} 台幣/日圓 = ${formatCurrency(totalOriginalCost, 'NT$')}</p>
         <p>2. 匯率差額： ${spotRate.toFixed(4)} (即期賣) - ${cashRate.toFixed(4)} (現鈔賣) = ${(spotRate - cashRate).toFixed(4)}</p>
-        <p>3. **初算手續費**： ${formatCurrency(amount, '¥').replace('.00', '')} × ${(spotRate - cashRate).toFixed(4)} × 0.5 = <span class="result-value">${formatCurrency(feePreliminary, 'NT$')}</span></p>
+        <p>3. **初算手續費**： ${formatCurrency(amount, '¥')} × ${(spotRate - cashRate).toFixed(4)} × 0.5 = <span class="result-value">${formatCurrency(feePreliminary, 'NT$')}</span></p>
         ${feeNoteDetail}
         <p>4. **實際手續費**： <span class="result-value">${formatCurrency(actualFee, 'NT$')}</span></p>
         <p>5. **總支出**： ${formatCurrency(totalOriginalCost, 'NT$')} (原始成本) + ${formatCurrency(actualFee, 'NT$')} (手續費) = ${formatCurrency(totalExpense, 'NT$')}</p>
-        <p>6. 攤提成本： ${formatCurrency(totalExpense, 'NT$')} ÷ ${formatCurrency(amount, '¥').replace('.00', '')} = <span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
+        <p>6. 攤提成本： ${formatCurrency(totalExpense, 'NT$')} ÷ ${formatCurrency(amount, '¥')} = <span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
         <hr>
         <p style="font-weight:bold; margin-bottom: 5px;">【台銀 Easy購比較計算】</p>
-        <p>7. 台銀 Easy購總成本： ${formatCurrency(amount, '¥').replace('.00', '')} × ${compareRate.toFixed(4)} = ${formatCurrency(externalCost, 'NT$')}</p>
+        <p>7. 台銀 Easy購總成本： ${formatCurrency(amount, '¥')} × ${compareRate.toFixed(4)} = ${formatCurrency(externalCost, 'NT$')}</p>
         <p>8. 淨節省金額： ${formatCurrency(externalCost, 'NT$')} (台銀) - ${formatCurrency(totalExpense, 'NT$')} (Richart) = <span class="final-savings">${formatCurrency(savings, 'NT$')}</span></p>
     `;
     
@@ -187,8 +193,8 @@ function copyResults() {
     const disclaimer = document.getElementById('disclaimer'); 
     
     // 更新複製內容中的版本資訊
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.13) 版權所有@gemini 設計者 zeroffa ---\n` +
-                     `提領日圓金額: ¥${parseFloat(document.getElementById('amount').value).toLocaleString('zh-TW')}\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.14) 版權所有@gemini 設計者 zeroffa ---\n` +
+                     `提領日圓金額: ${formatCurrency(parseFloat(document.getElementById('amount').value), '¥')}\n` + // V2.14 修正: 使用 formatCurrency 確保無 .00
                      `原始買進成本: ${document.getElementById('cost').value} NTD/JPY\n` +
                      `即期匯率: ${document.getElementById('spotRate').value} / 現鈔匯率: ${document.getElementById('cashRate').value}\n` +
                      `外部結匯比較匯率 (Easy購/其他): ${document.getElementById('compareRate').value} NTD/JPY\n` +
