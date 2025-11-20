@@ -114,17 +114,19 @@ function calculateCost() {
     const feePreliminary = amount * (spotRate - cashRate) * 0.5;
     const actualFee = Math.max(MIN_FEE, feePreliminary);
     
-    // 判斷是否被收最低手續費的文字提示 (用於簡要結果)
+    // 判斷是否會收最低手續費的文字提示 (用於簡要結果)
     let feeNoteSimple = ``;
     if (actualFee === MIN_FEE) {
-        feeNoteSimple = `<span style="color:#cc0000; font-weight:bold; font-size:0.9em;"> (被收最低手續費 NT$${MIN_FEE})</span>`;
+        // V2.9 修正: 用語從「被收」改為「會收」
+        feeNoteSimple = `<span style="color:#cc0000; font-weight:bold; font-size:0.9em;"> (會收最低手續費 NT$${MIN_FEE})</span>`;
     }
 
-    // 判斷是否被收最低手續費的文字提示 (用於詳細計算)
+    // 判斷是否會收最低手續費的文字提示 (用於詳細計算)
     let feeNoteDetail = ``;
     if (actualFee === MIN_FEE) {
         const difference = MIN_FEE - feePreliminary;
-        feeNoteDetail = `<p style="margin-left: 10px; color:#cc0000; font-weight:bold;">→ 初算金額 ${formatCurrency(feePreliminary, 'NT$')} 低於 NT$${MIN_FEE}，故被收最低手續費。 (被多收 ${formatCurrency(difference, 'NT$')})</p>`;
+        // V2.9 修正: 用語從「被收」改為「會收」
+        feeNoteDetail = `<p style="margin-left: 10px; color:#cc0000; font-weight:bold;">→ 初算金額 ${formatCurrency(feePreliminary, 'NT$')} 低於 NT$${MIN_FEE}，故會收最低手續費。 (被多收 ${formatCurrency(difference, 'NT$')})</p>`;
     }
 
     // --- Richart 總成本計算 ---
@@ -137,7 +139,6 @@ function calculateCost() {
     const savings = externalCost - totalExpense;
 
     // 6. 更新簡要結果
-    // V2.6：數值使用 formatCurrency 格式化
     resultsContainer.innerHTML = `
         <p>實際提領手續費：<span class="result-value">${formatCurrency(actualFee, 'NT$')}</span> ${feeNoteSimple}</p>
         <p>納入手續費後，日圓**單位總成本**：<span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
@@ -147,7 +148,6 @@ function calculateCost() {
     `;
 
     // 7. 更新詳細計算過程
-    // V2.6：數值使用 formatCurrency 格式化
     detailCalculation.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】</p>
         <p>1. 原始換匯成本： ${formatCurrency(amount, '¥').replace('.00', '')} × ${cost.toFixed(4)} 台幣/日圓 = ${formatCurrency(totalOriginalCost, 'NT$')}</p>
@@ -174,7 +174,7 @@ function copyResults() {
     const quickDifference = document.getElementById('quickDifference');
     const disclaimer = document.getElementById('disclaimer'); 
     
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.8) ---\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.10) ---\n` +
                      `提領日圓金額: ¥${parseFloat(document.getElementById('amount').value).toLocaleString('zh-TW')}\n` +
                      `原始買進成本: ${document.getElementById('cost').value} NTD/JPY\n` +
                      `即期匯率: ${document.getElementById('spotRate').value} / 現鈔匯率: ${document.getElementById('cashRate').value}\n` +
