@@ -61,16 +61,16 @@ function toggleContent(contentId) {
 }
 
 /**
- * V2.17 修正：動態新增一組成本輸入框
+ * V2.18 修正：動態新增一組成本輸入框
  * @param {number} jpyAmount 日圓金額預設值
  * @param {number} rate 買進成本預設值
- * @param {boolean} isDefault 是否為初始的第一筆紀錄
+ * @param {boolean} isDefault 是否為初始的第一筆紀錄 (V2.18: 只有 setupEventListeners 呼叫時為 true)
  */
 function addCostInput(jpyAmount = 50000, rate = 0.1989, isDefault = false) {
     const container = document.getElementById('costInputsContainer');
     const id = costInputCounter++;
 
-    // 只有在新增第一筆時，才需要先插入標題
+    // V2.18 修正：只有在初始化時 (isDefault = true)，才清空容器並加入標題
     if (isDefault) {
         container.innerHTML = `
             <div class="cost-input-header">
@@ -106,20 +106,17 @@ function addCostInput(jpyAmount = 50000, rate = 0.1989, isDefault = false) {
     const removeButton = document.createElement('button');
     removeButton.innerHTML = '&times;';
     removeButton.title = '刪除此筆紀錄';
-    removeButton.className = 'remove-btn'; // 使用新 class 確保樣式一致
+    removeButton.className = 'remove-btn'; 
     removeButton.onclick = () => removeCostInput(id);
 
     div.appendChild(amountInput);
     div.appendChild(rateInput);
     div.appendChild(removeButton);
     
-    // V2.17 修正：只有在有多筆紀錄時，刪除按鈕才應該可見。預設的第一筆應該隱藏
-    const currentRecords = container.querySelectorAll('.cost-input-row').length;
-    if (isDefault) {
-        // 第一筆預設的紀錄，不應該顯示刪除按鈕
+    // V2.18 修正：只有預設的第一筆紀錄 (id=0, 且是初始化時呼叫) 隱藏刪除按鈕
+    if (isDefault && id === 0) {
         removeButton.style.visibility = 'hidden'; 
     } else {
-        // 新增的紀錄，可以被刪除
         removeButton.style.visibility = 'visible';
     }
     
@@ -129,10 +126,12 @@ function addCostInput(jpyAmount = 50000, rate = 0.1989, isDefault = false) {
     calculateCost(); 
 }
 
-// V2.15/V2.17 修正：移除一組成本輸入框
+// V2.18 修正：移除一組成本輸入框
 function removeCostInput(id) {
     const row = document.getElementById(`cost-row-${id}`);
     const container = document.getElementById('costInputsContainer');
+    
+    // 扣掉頂部的標題行
     const rows = container.querySelectorAll('.cost-input-row');
     
     // 確保至少保留一筆紀錄
@@ -140,7 +139,7 @@ function removeCostInput(id) {
         row.remove();
         calculateCost(); // 移除後重新計算
         
-        // V2.17: 如果只剩下一筆，隱藏它的刪除按鈕
+        // V2.18: 如果只剩下一筆，隱藏它的刪除按鈕
         const remainingRows = container.querySelectorAll('.cost-input-row');
         if (remainingRows.length === 1) {
              remainingRows[0].querySelector('.remove-btn').style.visibility = 'hidden';
@@ -186,9 +185,11 @@ function getAverageCost() {
     
     if (validRecords > 1) {
         costTitle = "加權平均成本";
+        // V2.18: 修正提示文字
         titleElement.innerHTML = `日圓買入成本紀錄 (分批買入計算**加權平均成本**) <span class="default-hint">(請輸入您手上所有日圓的買入紀錄)</span>`;
     } else {
         costTitle = "單一買進成本";
+        // V2.18: 修正提示文字
         titleElement.innerHTML = `日圓買入成本紀錄 (預設單一成本) <span class="default-hint">(如有多筆，請按下方按鈕新增)</span>`;
     }
 
@@ -210,6 +211,7 @@ function getAverageCost() {
 // 計算並更新速算區塊
 function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
     const quickDifferenceElement = document.getElementById('quickDifference');
+    const { costTitle } = getAverageCost(); // V2.18 取得成本名稱
     
     // 檢查平均成本是否有效，無效則不顯示速算
     if (isNaN(cost)) {
@@ -248,10 +250,10 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
 
     tableHtml += `</tbody></table>`;
     
-    // V2.15 修正：顯示計算所使用的加權平均成本
+    // V2.18 修正：顯示計算所使用的成本名稱
     quickDifferenceElement.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【不同金額差價速算 (手續費攤提影響)】</p>
-        <p style="font-size:0.8em;">(使用匯率：平均成本 **${cost.toFixed(6)}** / 即期 **${spotRate.toFixed(4)}** / 現鈔 **${cashRate.toFixed(4)}**)</p>
+        <p style="font-size:0.8em;">(使用匯率：${costTitle} **${cost.toFixed(6)}** / 即期 **${spotRate.toFixed(4)}** / 現鈔 **${cashRate.toFixed(4)}**)</p>
         ${tableHtml}
     `;
 }
@@ -356,10 +358,10 @@ function copyResults() {
     const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost(); 
     
     // 更新複製內容中的版本資訊
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.17) 版權所有@gemini 設計者 zeroffa ---\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.18) 版權所有@gemini 設計者 zeroffa ---\n` +
                      `提領日圓金額: ${formatCurrency(parseFloat(document.getElementById('amount').value), '¥')}\n` +
                      `總買入日圓金額: ${formatCurrency(totalJPY, '¥')}\n` + 
-                     `**${costTitle}**: ${cost.toFixed(6)} NTD/JPY\n` + // V2.17 變更
+                     `**${costTitle}**: ${cost.toFixed(6)} NTD/JPY\n` + 
                      `即期匯率: ${document.getElementById('spotRate').value} / 現鈔匯率: ${document.getElementById('cashRate').value}\n` +
                      `外部結匯比較匯率 (Easy購/其他): ${document.getElementById('compareRate').value} NTD/JPY\n` +
                      `================================\n` +
@@ -407,9 +409,10 @@ function setupEventListeners() {
         }
     });
 
-    // V2.17 修正：載入時，新增預設的第一筆成本紀錄
+    // V2.18 修正：確保只在初始化時新增預設紀錄
     if (costInputCounter === 0) { 
-        addCostInput(250000, 0.1989, true); // true 表示這是預設的第一筆
+        // 傳遞 true 表示這是初始化時的預設紀錄
+        addCostInput(250000, 0.1989, true); 
     }
     
     // 初始計算會在 addCostInput 內部調用，這裡再次呼叫確保所有欄位都被初始化
