@@ -31,11 +31,20 @@ function formatCurrency(number, currencySymbol) {
 }
 
 /**
- * V2.8 修復：設定快速金額按鈕的值，並確保立即觸發計算。
+ * V2.20 修正：設定快速金額按鈕的值，並加入多筆成本計算時的警告。
  * @param {number} value 要設定的日圓金額
+ * @param {boolean} fromQuickButton 是否從快速按鈕觸發
  */
-function setAmount(value) {
+function setAmount(value, fromQuickButton = false) {
     const amountInput = document.getElementById('amount');
+    
+    // 檢查目前是否有超過一筆的買入成本紀錄
+    const recordCount = document.querySelectorAll('.cost-input-row').length;
+    
+    if (fromQuickButton && recordCount > 1) {
+        alert("【多筆日幣計算中】\n\n警告：您目前有多筆買入紀錄，正在計算加權平均成本。\n\n此快速按鈕僅更改上方的「本次提領日圓金額」，您的多筆買入成本紀錄不會被影響。");
+    }
+
     amountInput.value = value;
     calculateCost(); // 觸發重新計算
 }
@@ -64,7 +73,7 @@ function toggleContent(contentId) {
  * V2.18 修正：動態新增一組成本輸入框
  * @param {number} jpyAmount 日圓金額預設值
  * @param {number} rate 買進成本預設值
- * @param {boolean} isDefault 是否為初始的第一筆紀錄 (V2.18: 只有 setupEventListeners 呼叫時為 true)
+ * @param {boolean} isDefault 是否為初始的第一筆紀錄 
  */
 function addCostInput(jpyAmount = 50000, rate = 0.1989, isDefault = false) {
     const container = document.getElementById('costInputsContainer');
@@ -151,7 +160,7 @@ function removeCostInput(id) {
 }
 
 /**
- * V2.17 修正：計算所有買入紀錄的加權平均成本，並根據筆數調整顯示名稱。
+ * V2.17/V2.20 修正：計算所有買入紀錄的加權平均成本，並根據筆數調整顯示名稱和顏色。
  * @returns {object} {averageCost: number, totalJPY: number, recordCount: number}
  */
 function getAverageCost() {
@@ -194,9 +203,9 @@ function getAverageCost() {
     }
 
     if (validRecords > 0) {
-        // V2.17: 顯示總買進日圓金額和平均成本
+        // V2.20 修正：將總買入日圓的數值改為紅色
         displayElement.innerHTML = `
-            總買入日圓：${formatCurrency(totalJPY, '¥')} | 
+            總買入日圓：<span style="color:#cc0000;">${formatCurrency(totalJPY, '¥')}</span> | 
             **${costTitle}**：<span style="color:#cc0000;">${averageCost.toFixed(6)}</span> NTD/JPY
         `;
     } else {
@@ -303,10 +312,14 @@ function calculateCost() {
 
     // 判斷是否會收最低手續費的文字提示 (用於詳細計算)
     let feeNoteDetail = ``;
-    if (actualFee === MIN_FEE) {
+    // V2.20 修正：處理即期 < 現鈔時 feePreliminary 為負數的情況
+    if (feePreliminary < 0) {
+        feeNoteDetail = `<p style="margin-left: 10px; color:#cc0000; font-weight:bold;">→ 初算金額為負值，但根據規定，最低仍會收取 NT$${MIN_FEE} 手續費。</p>`;
+    } else if (actualFee === MIN_FEE) {
         const difference = MIN_FEE - feePreliminary;
         feeNoteDetail = `<p style="margin-left: 10px; color:#cc0000; font-weight:bold;">→ 初算金額 ${formatCurrency(feePreliminary, 'NT$')} 低於 NT$${MIN_FEE}，故會收最低手續費。 (被多收 ${formatCurrency(difference, 'NT$')})</p>`;
     }
+
 
     // --- Richart 總成本計算 ---
     const totalOriginalCost = amount * cost; 
@@ -358,7 +371,7 @@ function copyResults() {
     const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost(); 
     
     // 更新複製內容中的版本資訊
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.19) 版權所有@gemini 設計者 zeroffa ---\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.20) 版權所有@gemini 設計者 zeroffa ---\n` +
                      `提領日圓金額: ${formatCurrency(parseFloat(document.getElementById('amount').value), '¥')}\n` +
                      `總買入日圓金額: ${formatCurrency(totalJPY, '¥')}\n` + 
                      `**${costTitle}**: ${cost.toFixed(6)} NTD/JPY\n` + 
@@ -408,6 +421,10 @@ function setupEventListeners() {
             inputElement.addEventListener('input', calculateCost);
         }
     });
+
+    // V2.20 修正：將匯率輸入框的值設定為新的預設值
+    document.getElementById('spotRate').value = '0.1993'; 
+    document.getElementById('cashRate').value = '0.2002';
 
     // V2.18 修正：確保只在初始化時新增預設紀錄
     if (costInputCounter === 0) { 
