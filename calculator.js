@@ -1,4 +1,4 @@
-// 預先定義的速算金額列表：已修正為 [1000, ..., 2000000]
+// 預先定義的速算金額列表
 const QUICK_AMOUNTS = [1000, 5000, 10000, 50000, 100000, 200000, 300000, 500000, 1000000, 2000000];
 const MIN_FEE = 100; // 最低手續費
 
@@ -10,6 +10,20 @@ function calculateUnitCost(amount, cost, spotRate, cashRate) {
     const totalExpense = totalOriginalCost + actualFee;
     return totalExpense;
 }
+
+// **【V2.0 新增】** 切換內容顯示/隱藏的函數
+function toggleContent(contentId) {
+    const content = document.getElementById(contentId);
+    
+    // 如果目前是隱藏狀態 (display: none)，則切換為顯示 (display: block)
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+    } else {
+        // 否則，切換為隱藏
+        content.style.display = 'none';
+    }
+}
+
 
 // 計算並更新速算區塊
 function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
@@ -69,6 +83,7 @@ function calculateCost() {
         resultsContainer.innerHTML = `<p style="color:red;">請檢查所有數值輸入是否正確。</p>`;
         detailCalculation.innerHTML = '<p style="color:red;">請先填寫正確匯率</p>';
         document.getElementById('quickDifference').innerHTML = `<p style="color:red; font-size:0.9em;">請先填寫正確匯率</p>`;
+        document.getElementById('quickDifference').style.display = 'none'; // 保持隱藏
         return;
     }
 
@@ -84,9 +99,12 @@ function calculateCost() {
 
     // 判斷是否被收最低手續費的文字提示 (用於詳細計算)
     let feeNoteDetail = ``;
+    let feeDifferenceText = '';
     if (actualFee === MIN_FEE) {
         const difference = MIN_FEE - feePreliminary;
-        feeNoteDetail = `<p style="margin-left: 10px; color:#cc0000; font-weight:bold;">→ 初算金額 ${feePreliminary.toFixed(2)} 台幣低於最低收費 $${MIN_FEE} 台幣，故被收最低手續費。 (差價：${difference.toFixed(2)} 台幣)</p>`;
+        // **【V2.0 修正】** 強化價差提示
+        feeDifferenceText = `被多收的價差：${difference.toFixed(2)} 台幣`;
+        feeNoteDetail = `<p style="margin-left: 10px; color:#cc0000; font-weight:bold;">→ 初算金額 ${feePreliminary.toFixed(2)} 台幣低於 $${MIN_FEE} 台幣，故被收最低手續費。 (${feeDifferenceText})</p>`;
     }
 
 
@@ -111,16 +129,16 @@ function calculateCost() {
     // 7. 更新詳細計算過程
     detailCalculation.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】</p>
-        <p>1. 原始換匯成本： ${amount.toFixed(0)} 日圓 × ${cost.toFixed(4)} 台幣/日圓 = ${(amount * cost).toFixed(2)} 台幣</p>
+        <p>1. 原始換匯成本： ${amount.toLocaleString('zh-TW')} 日圓 × ${cost.toFixed(4)} 台幣/日圓 = ${(amount * cost).toFixed(2)} 台幣</p>
         <p>2. 匯率差額： ${spotRate.toFixed(4)} (即期賣) - ${cashRate.toFixed(4)} (現鈔賣) = ${(spotRate - cashRate).toFixed(4)}</p>
-        <p>3. **初算手續費**： ${amount.toFixed(0)} 日圓 × ${(spotRate - cashRate).toFixed(4)} × 0.5 = <span class="result-value">${feePreliminary.toFixed(2)}</span> 台幣</p>
+        <p>3. **初算手續費**： ${amount.toLocaleString('zh-TW')} 日圓 × ${(spotRate - cashRate).toFixed(4)} × 0.5 = <span class="result-value">${feePreliminary.toFixed(2)}</span> 台幣</p>
         ${feeNoteDetail}
         <p>4. **實際手續費**： <span class="result-value">${actualFee.toFixed(2)}</span> 台幣</p>
         <p>5. **總支出**： ${totalOriginalCost.toFixed(2)} (原始成本) + ${actualFee.toFixed(2)} (手續費) = ${totalExpense.toFixed(2)} 台幣</p>
-        <p>6. 攤提成本： ${totalExpense.toFixed(2)} 台幣 ÷ ${amount.toFixed(0)} 日圓 = <span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
+        <p>6. 攤提成本： ${totalExpense.toFixed(2)} 台幣 ÷ ${amount.toLocaleString('zh-TW')} 日圓 = <span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
         <hr>
         <p style="font-weight:bold; margin-bottom: 5px;">【台銀 Easy購比較計算】</p>
-        <p>7. 台銀 Easy購總成本： ${amount.toFixed(0)} 日圓 × ${compareRate.toFixed(4)} = ${externalCost.toFixed(2)} 台幣</p>
+        <p>7. 台銀 Easy購總成本： ${amount.toLocaleString('zh-TW')} 日圓 × ${compareRate.toFixed(4)} = ${externalCost.toFixed(2)} 台幣</p>
         <p>8. 淨節省金額： ${externalCost.toFixed(2)} (台銀) - ${totalExpense.toFixed(2)} (Richart) = <span class="final-savings">${savings.toFixed(2)}</span> 台幣</p>
     `;
     
@@ -133,8 +151,9 @@ function copyResults() {
     const resultsContainer = document.getElementById('resultsContainer');
     const detailCalculation = document.getElementById('detailCalculation');
     const quickDifference = document.getElementById('quickDifference');
+    const disclaimer = document.getElementById('disclaimer');
     
-    let fullText = `--- JPY Cost Calc 結算結果 (V1.9) ---\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.0) ---\n` +
                      `提領日圓金額: ${document.getElementById('amount').value} JPY\n` +
                      `原始買進成本: ${document.getElementById('cost').value} NTD/JPY\n` +
                      `即期匯率: ${document.getElementById('spotRate').value} / 現鈔匯率: ${document.getElementById('cashRate').value}\n` +
@@ -142,7 +161,9 @@ function copyResults() {
                      `================================\n` +
                      resultsContainer.innerText;
 
+    // 無論是否摺疊，都複製詳細內容
     fullText += '\n\n【詳細計算過程】\n' + detailCalculation.innerText + '\n\n' + quickDifference.innerText;
+    fullText += '\n\n' + disclaimer.innerText;
 
     if (navigator.clipboard) {
         navigator.clipboard.writeText(fullText)
@@ -175,4 +196,5 @@ function setupEventListeners() {
 
 // 將函數暴露給 HTML 呼叫
 window.copyResults = copyResults;
+window.toggleContent = toggleContent; 
 window.onload = setupEventListeners;
