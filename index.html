@@ -36,6 +36,11 @@
             text-align: center;
         }
         
+        /* V2.10 新增：防止文字在中間斷行 */
+        .no-break {
+            white-space: nowrap;
+        }
+
         /* 上方免責聲明專用邊距與置中 */
         #disclaimer {
             margin: 15px auto; 
@@ -163,14 +168,14 @@
     
     <div id="disclaimer">
         **【免責聲明】** 此網頁僅供參考試算使用，所有計算結果不具任何法律效力或交易依據。
-        實際費用與匯率請以銀行牌告及交易當下系統計算為準，使用者須自行承擔準確性風險。
+        <span class="no-break">實際費用與匯率請以銀行牌告及交易當下系統計算為準，使用者須自行承擔準確性風險。</span>
     </div>
 
     <div class="container">
         
         <div class="input-section">
             <div class="input-group">
-                <label for="amount" class="input-label">提領日圓金額 (日圓)：<span class="default-hint">(預設值：250,000 JPY)</span></label>
+                <label for="amount" class="input-label">提領日圓金額 (日圓)：<span class="default-hint">(預設值：250,000 JPY，可修改)</span></label>
                 <input type="number" id="amount" value="250000"> 
                 <div class="quick-amount-buttons">
                     <button onclick="setAmount(50000)">¥5萬</button>
@@ -242,11 +247,11 @@
     
     <div id="disclaimer-footer">
         **【免責聲明】** 此網頁僅供參考試算使用，所有計算結果不具任何法律效力或交易依據。
-        實際費用與匯率請以銀行牌告及交易當下系統計算為準，使用者須自行承擔準確性風險。
+        <span class="no-break">實際費用與匯率請以銀行牌告及交易當下系統計算為準，使用者須自行承擔準確性風險。</span>
     </div>
 
     <div class="version-info">
-        Version: 2.8 (預設值數字格式修正與按鈕修復)
+        Version: 2.10 (免責聲明文字防換行優化)
     </div>
 
     <script src="calculator.js"></script>
