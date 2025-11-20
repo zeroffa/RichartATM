@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JPY Cost Calc</title>
     <style>
-        /* (CSS樣式區塊多數沿用 V1.4，僅新增 quick-diff 樣式) */
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif; /* 確保台灣用戶體驗 */
             max-width: 1000px; 
             margin: 20px auto; 
             padding: 20px; 
@@ -38,6 +37,7 @@
             box-sizing: border-box;
         }
         
+        /* 公告區塊樣式 (無變動) */
         #announcement {
             background-color: #fff3cd;
             border: 1px solid #ffeeba;
@@ -52,130 +52,74 @@
             padding: 2px 0;
         }
 
-        .input-group {
-            margin-bottom: 20px; 
-        }
-        .input-label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .default-hint {
-            font-weight: normal;
-            color: #666;
-            font-size: 0.9em;
-            margin-left: 10px;
-        }
-        input[type="number"] { 
-            width: 100%; 
-            padding: 10px; 
-            box-sizing: border-box; 
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+        /* 輸入樣式 (無變動) */
+        .input-group { margin-bottom: 20px; }
+        .input-label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .default-hint { font-weight: normal; color: #666; font-size: 0.9em; margin-left: 10px; }
+        input[type="number"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
         
-        /* 數值顏色標示 */
-        .result-value {
-            color: #007bff; 
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        .final-cost {
-            color: #cc0000; 
-            font-size: 1.2em;
-        }
-        .final-savings {
-            color: #4CAF50; 
-            font-size: 1.2em;
-        }
+        /* 數值顏色標示 (無變動) */
+        .result-value { color: #007bff; font-weight: bold; font-size: 1.1em; }
+        .final-cost { color: #cc0000; font-size: 1.2em; }
+        .final-savings { color: #4CAF50; font-size: 1.2em; }
+        hr { border: 0; border-top: 1px dashed #ccc; margin: 15px 0; }
         
-        hr {
-            border: 0;
-            border-top: 1px dashed #ccc;
-            margin: 15px 0;
-        }
+        /* 複製按鈕 (無變動) */
+        #copyButton { margin-top: 10px; padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
+        #copyButton:hover { background-color: #45a049; }
         
-        #copyButton {
-            margin-top: 10px;
-            padding: 8px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        #copyButton:hover {
-            background-color: #45a049;
-        }
-        
-        #detailCalculation {
+        /* 詳細計算與速算區塊 */
+        #detailCalculation, #quickDifference {
             background-color: #fff;
             padding: 10px;
-            margin-top: 15px;
+            margin-top: 5px; /* 縮小與標題的間距 */
             border: 1px dashed #ccc;
             border-radius: 4px;
             font-size: 0.9em;
             line-height: 1.6;
         }
-
-        /* 差價速算區樣式 */
-        #quickDifference {
-            background-color: #e6f7ff;
-            border: 1px solid #91d5ff;
-            padding: 10px;
-            margin-top: 15px;
-            border-radius: 4px;
+        
+        /* 摺疊/展開 樣式 */
+        .collapsed-content {
+            display: none; /* 預設隱藏 */
+        }
+        .toggle-btn {
             font-size: 0.9em;
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-left: 10px;
         }
-        #quickDifference table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 5px;
-        }
-        #quickDifference th, #quickDifference td {
-            padding: 4px 8px;
-            text-align: right;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        #quickDifference th:first-child, #quickDifference td:first-child {
-            text-align: left;
-        }
-        #quickDifference .negative-diff {
-            color: #fa541c; /* 負數用橘紅色 */
-            font-weight: bold;
-        }
-        #quickDifference .positive-diff {
-            color: #4CAF50; /* 正數用綠色 */
-            font-weight: bold;
-        }
+
+        /* 差價速算區表格 (無變動) */
+        #quickDifference table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        #quickDifference th, #quickDifference td { padding: 4px 8px; text-align: right; border-bottom: 1px solid #f0f0f0; }
+        #quickDifference th:first-child, #quickDifference td:first-child { text-align: left; }
+        #quickDifference .negative-diff { color: #fa541c; font-weight: bold; }
+        #quickDifference .positive-diff { color: #4CAF50; font-weight: bold; }
 
 
         .version-info {
-            margin-top: 25px;
-            font-size: 0.8em;
-            color: #888;
-            text-align: right;
-            width: 100%;
+            margin-top: 25px; font-size: 0.8em; color: #888; text-align: right; width: 100%;
         }
         button { display: none; } 
     </style>
 </head>
 <body>
-    <h2>💰 Richart 日圓提領成本計算機</h2>
-    <p>計算提領日圓現鈔的實際手續費及攤提後總成本 (NT$/JPY)。結果會即時更新。</p>
+    <h2>💰 Richart 日圓提領成本試算器</h2>
+    <p>試算提領日圓現鈔的實際手續費及攤提後總成本 (台幣/日圓)。結果會即時更新。</p>
 
     <div class="container">
         
         <div class="input-section">
             
             <div class="input-group">
-                <label for="amount" class="input-label">提領日圓金額 (JPY)：<span class="default-hint">(預設值：260000 JPY)</span></label>
+                <label for="amount" class="input-label">提領日圓金額 (日圓)：<span class="default-hint">(預設值：260000 JPY)</span></label>
                 <input type="number" id="amount" value="260000">
             </div>
 
             <div class="input-group">
-                <label for="cost" class="input-label">原始買進成本 (NTD/JPY)：<span class="default-hint">(預設值：0.1989 NTD/JPY)</span></label>
+                <label for="cost" class="input-label">原始買進成本 (台幣/日圓)：<span class="default-hint">(預設值：0.1989 NTD/JPY)</span></label>
                 <input type="number" id="cost" value="0.1989" step="0.0001">
             </div>
 
@@ -193,7 +137,7 @@
             <div class="input-group">
                 <label for="compareRate" class="input-label">外部結匯比較匯率 (例如台銀 Easy購)：<span class="default-hint">(預設值：0.2021 NTD/JPY)</span></label>
                 <input type="number" id="compareRate" value="0.2021" step="0.0001">
-                <p style="font-size:0.8em; margin-top:5px;"><a href="https://bot.com.tw" target="_blank">臺灣銀行 Easy購外幣現鈔系統 (bot.com.tw)</a></p>
+                <p style="font-size:0.8em; margin-top:5px;"><a href="https://bot.com.tw" target="_blank">臺灣銀行 Easy購外幣現鈔系統</a></p>
             </div>
 
         </div>
@@ -212,14 +156,22 @@
             <div id="resultsContainer">
                 </div>
             
-            <button id="copyButton" onclick="copyResults()">複製結果內容</button>
+            <button id="copyButton" onclick="copyResults()">複製所有計算內容</button>
 
-            <div id="detailCalculation">
+            <p style="font-weight:bold; margin-bottom: 5px; margin-top: 15px;">
+                詳細計算過程
+                <span id="toggleDetailBtn" class="toggle-btn" onclick="toggleContent('detailCalculation', 'toggleDetailBtn')">點此顯示/隱藏</span>
+            </p>
+            <div id="detailCalculation" class="collapsed-content">
                 </div>
 
-            <div id="quickDifference">
-                <p style="font-weight:bold; margin-bottom: 5px;">【不同金額差價速算】</p>
+            <p style="font-weight:bold; margin-bottom: 5px; margin-top: 15px;">
+                不同金額差價速算
+                <span id="toggleQuickBtn" class="toggle-btn" onclick="toggleContent('quickDifference', 'toggleQuickBtn')">點此顯示/隱藏</span>
+            </p>
+            <div id="quickDifference" class="collapsed-content">
                 </div>
+
         </div>
 
     </div>
@@ -227,11 +179,11 @@
     <p style="font-size:0.8em; color:#888; margin-top:20px;">
         * 請以台新銀行當日牌告賣出匯率為準。
         <br>
-        ** ATM 據點資訊：** <a href="https://www.taishinbank.com.tw/TSB/personal/deposit/atm-service/fx-atm/" target="_blank">ATM/補摺機據點 - 台新銀行 (taishinbank.com.tw)</a> (備註：外幣 ATM 提領日圓以 **¥5000** 面額為主)
+        ** ATM 據點資訊：** <a href="https://www.taishinbank.com.tw/TSB/personal/deposit/atm-service/fx-atm/" target="_blank">台新銀行外幣 ATM/補摺機據點</a> (備註：外幣 ATM 提領日圓以 **¥5000** 面額為主)
     </p>
 
     <div class="version-info">
-        Version: 1.5 (Quick Difference Calculator)
+        Version: 1.6 (摺疊功能優化)
     </div>
 
     <script src="calculator.js"></script>
