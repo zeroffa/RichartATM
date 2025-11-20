@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JPY Cost Calc</title>
     <style>
-        /* (CSS 樣式保持 V2.14 不變，僅新增動態輸入框相關樣式) */
+        /* (CSS 樣式保持 V2.15/V2.16 不變) */
         body { 
             font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
             max-width: 1000px; 
@@ -58,6 +58,17 @@
         .version-info { margin-top: 25px; font-size: 0.8em; color: #888; text-align: right; width: 100%; }
 
         /* V2.15 新增：多筆買入紀錄樣式 */
+        #costInputsContainer { /* 設置容器為 Flex 讓標題和輸入框可以排版 */
+            display: flex;
+            flex-direction: column;
+        }
+        .cost-input-header {
+             display: flex;
+             font-weight: bold; 
+             font-size: 0.9em; 
+             margin-bottom: 5px;
+             gap: 10px;
+        }
         .cost-input-row {
             display: flex;
             gap: 10px;
@@ -66,16 +77,16 @@
         }
         .cost-input-row input[type="number"] {
             padding: 8px;
-            flex: 1; /* 讓輸入框彈性分配空間 */
+            flex: 1; 
             min-width: 0; 
         }
         .cost-input-row .label-jpy {
-            flex: 1.5; /* 日圓輸入框稍寬 */
+            flex: 1.5; 
         }
         .cost-input-row .label-rate {
-            flex: 1; /* 成本輸入框稍窄 */
+            flex: 1; 
         }
-        .cost-input-row button {
+        .cost-input-row .remove-btn {
             background-color: #ff4d4f;
             color: white;
             border: none;
@@ -83,12 +94,12 @@
             padding: 8px 10px;
             cursor: pointer;
             font-size: 0.9em;
-            width: 30px; /* 刪除按鈕固定寬度 */
-            height: 38px; /* 確保高度對齊輸入框 */
+            width: 30px; 
+            height: 38px; 
             line-height: 20px;
             margin-left: 5px;
         }
-        .cost-input-row button:hover {
+        .cost-input-row .remove-btn:hover {
             background-color: #d9363e;
         }
         #addCostButton {
@@ -144,21 +155,15 @@
             </div>
 
             <div class="input-group">
-                <label class="input-label">
-                    日圓買入成本紀錄 (分批買入計算**加權平均成本**)
+                <label id="costInputTitle" class="input-label">
+                    日圓買入成本紀錄
                     <span class="default-hint">(請輸入您手上所有日圓的買入紀錄)</span>
                 </label>
-                
-                <div class="cost-input-row" style="font-weight: bold; font-size: 0.9em; margin-bottom: 5px;">
-                    <span class="label-jpy">日圓金額 (¥)</span>
-                    <span class="label-rate">買進成本 (NTD/JPY)</span>
-                    <span style="width: 30px;"></span>
-                </div>
                 
                 <div id="costInputsContainer">
                     </div>
                 
-                <button id="addCostButton" onclick="addCostInput()">+ 新增一筆買入紀錄</button>
+                <button id="addCostButton" onclick="addCostInput(50000, 0.1989, true)">+ 新增一筆買入紀錄</button> 
                 
                 <div id="averageCostDisplay" class="average-cost-display">
                     </div>
@@ -233,7 +238,7 @@
     </div>
 
     <div class="version-info">
-        Version: 2.15 (支援多筆買入成本計算加權平均成本) 版權所有@gemini 設計者 zeroffa
+        Version: 2.17 (修正為預設單一買進成本，多筆時動態計算加權平均) 版權所有@gemini 設計者 zeroffa
     </div>
 
     <script src="calculator.js"></script>
