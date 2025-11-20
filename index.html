@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JPY Cost Calc</title>
     <style>
+        /* (CSS 樣式保持 V2.14 不變，僅新增動態輸入框相關樣式) */
         body { 
             font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
             max-width: 1000px; 
@@ -14,176 +15,107 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             border-radius: 8px;
         }
-        
-        /* 標題置中 */
-        h2 {
-            text-align: center;
-        }
-        
-        /* 標題下的第一段說明文字置中 */
-        body > p:first-of-type {
-            text-align: center;
-        }
-        
-        /* 免責聲明通用樣式 */
-        #disclaimer, #disclaimer-footer {
-            font-size: 0.8em;
-            color: #990000;
-            background-color: #ffebeb;
-            border: 1px solid #ffcccc;
-            padding: 10px;
-            border-radius: 4px;
-            text-align: center;
-        }
-        
-        /* V2.10 新增：防止文字在中間斷行 */
-        .no-break {
-            white-space: nowrap;
-        }
-
-        /* 上方免責聲明專用邊距與置中 */
-        #disclaimer {
-            margin: 15px auto; 
-            max-width: 90%; 
-        }
-
-        /* 下方免責聲明專用邊距 */
-        #disclaimer-footer {
-            margin-top: 20px;
-        }
-
-
-        /* 電腦版 (寬螢幕) - 左右並排佈局 */
-        .container {
-            display: flex;
-            flex-wrap: wrap; 
-            gap: 20px;
-        }
-
-        .input-section {
-            flex: 1;
-            min-width: 300px; 
-        }
-        
-        .result-section {
-            flex: 1;
-            min-width: 350px;
-            border: 1px solid #b0e0e6; 
-            border-left: 5px solid #1e90ff; 
-            background-color: #f0f8ff; 
-            padding: 15px; 
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        
-        /* --- 手機版 (窄螢幕) 響應式優化 --- */
+        h2 { text-align: center; }
+        body > p:first-of-type { text-align: center; }
+        #disclaimer, #disclaimer-footer { font-size: 0.8em; color: #990000; background-color: #ffebeb; border: 1px solid #ffcccc; padding: 10px; border-radius: 4px; text-align: center; }
+        .no-break { white-space: nowrap; }
+        #disclaimer { margin: 15px auto; max-width: 90%; }
+        #disclaimer-footer { margin-top: 20px; }
+        .container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .input-section { flex: 1; min-width: 300px; }
+        .result-section { flex: 1; min-width: 350px; border: 1px solid #b0e0e6; border-left: 5px solid #1e90ff; background-color: #f0f8ff; padding: 15px; border-radius: 4px; box-sizing: border-box; }
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column; 
-            }
-            .input-section, .result-section {
-                min-width: 100%;
-                flex: auto;
-            }
-            .result-section {
-                border-left: 1px solid #b0e0e6;
-                border-top: 5px solid #1e90ff;
-            }
+            .container { flex-direction: column; }
+            .input-section, .result-section { min-width: 100%; flex: auto; }
+            .result-section { border-left: 1px solid #b0e0e6; border-top: 5px solid #1e90ff; }
         }
-        
-        /* 公告區塊樣式 */
-        #announcement {
-            background-color: #fff3cd; border: 1px solid #ffeeba; padding: 10px; margin-bottom: 15px; border-radius: 4px; font-size: 0.9em; color: #856404;
-        }
+        #announcement { background-color: #fff3cd; border: 1px solid #ffeeba; padding: 10px; margin-bottom: 15px; border-radius: 4px; font-size: 0.9em; color: #856404; }
         #announcement p { margin: 0; padding: 2px 0; }
-        
-        /* 輸入樣式 */
         .input-group { margin-bottom: 20px; }
         .input-label { display: block; font-weight: bold; margin-bottom: 5px; }
-        /* V2.8 修正：預設值加入千分位分隔 */
         .default-hint { font-weight: normal; color: #666; font-size: 0.9em; margin-left: 10px; }
         input[type="number"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
-        
-        /* V2.11 新增：匯率標籤顏色樣式 */
-        .spot-rate-label { color: #007bff; } /* 即期：藍色 */
-        .cash-rate-label { color: #28a745; } /* 現鈔：綠色 */
-
-        /* 快速金額按鈕樣式 */
+        .spot-rate-label { color: #007bff; }
+        .cash-rate-label { color: #28a745; }
         .quick-amount-buttons { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
-        .quick-amount-buttons button {
-            padding: 8px 10px;
-            border: 1px solid #007bff;
-            background-color: #e6f7ff;
-            color: #007bff;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9em;
-            flex-grow: 1;
-            min-width: 70px;
-        }
-        .quick-amount-buttons button:hover {
-            background-color: #007bff;
-            color: white;
-        }
-
-
-        /* 數值顏色標示 */
+        .quick-amount-buttons button { padding: 8px 10px; border: 1px solid #007bff; background-color: #e6f7ff; color: #007bff; border-radius: 4px; cursor: pointer; font-size: 0.9em; flex-grow: 1; min-width: 70px; }
+        .quick-amount-buttons button:hover { background-color: #007bff; color: white; }
         .result-value { color: #007bff; font-weight: bold; font-size: 1.1em; }
         .final-cost { color: #cc0000; font-weight: bold; font-size: 1.2em; }
         .final-savings { color: #4CAF50; font-weight: bold; font-size: 1.2em; }
         hr { border: 0; border-top: 1px dashed #ccc; margin: 15px 0; }
-        
-        /* 複製按鈕 */
         #copyButton { margin-top: 10px; padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
         #copyButton:hover { background-color: #45a049; }
-        
-        /* 詳細計算與速算區塊 (樣式不變，但速算區塊預設隱藏) */
-        #detailCalculation { 
-            background-color: #fff; padding: 10px; margin-top: 15px; border: 1px dashed #ccc; border-radius: 4px; font-size: 0.9em; line-height: 1.6; 
-        }
-        
-        /* V2.14 修正：移除 overflow-x: auto; 讓文字可以換行以適應手機畫面 */
-        #quickDifference { 
-            background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; 
-            display: none; 
-            /* 移除 overflow-x: auto; */
-        }
-        
-        /* 摺疊/展開 樣式 */
-        .toggle-btn {
-            font-size: 0.9em;
-            color: #007bff;
-            cursor: pointer;
-            text-decoration: underline;
-            margin-left: 10px;
-        }
-        
-        /* 差價速算區表格 */
-        #quickDifference table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 5px; 
-            /* V2.14 修正：移除 white-space: nowrap; 讓文字可以換行 */
-        }
-        #quickDifference th, #quickDifference td { 
-            padding: 4px 5px; /* 縮小邊距 */
-            text-align: right; 
-            border-bottom: 1px solid #f0f0f0; 
-            word-wrap: break-word; /* 允許數字換行 */
-        }
-        #quickDifference th:first-child, #quickDifference td:first-child { 
-            text-align: left; 
-        }
-        /* V2.14 修正：讓表頭文字可以換行 */
-        #quickDifference th {
-            line-height: 1.2;
-        }
-
+        #detailCalculation { background-color: #fff; padding: 10px; margin-top: 15px; border: 1px dashed #ccc; border-radius: 4px; font-size: 0.9em; line-height: 1.6; }
+        #quickDifference { background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; display: none; }
+        .toggle-btn { font-size: 0.9em; color: #007bff; cursor: pointer; text-decoration: underline; margin-left: 10px; }
+        #quickDifference table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        #quickDifference th, #quickDifference td { padding: 4px 5px; text-align: right; border-bottom: 1px solid #f0f0f0; word-wrap: break-word; }
+        #quickDifference th:first-child, #quickDifference td:first-child { text-align: left; }
+        #quickDifference th { line-height: 1.2; }
         #quickDifference .negative-diff { color: #fa541c; font-weight: bold; }
         #quickDifference .positive-diff { color: #4CAF50; font-weight: bold; }
-
         .version-info { margin-top: 25px; font-size: 0.8em; color: #888; text-align: right; width: 100%; }
-        
+
+        /* V2.15 新增：多筆買入紀錄樣式 */
+        .cost-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .cost-input-row input[type="number"] {
+            padding: 8px;
+            flex: 1; /* 讓輸入框彈性分配空間 */
+            min-width: 0; 
+        }
+        .cost-input-row .label-jpy {
+            flex: 1.5; /* 日圓輸入框稍寬 */
+        }
+        .cost-input-row .label-rate {
+            flex: 1; /* 成本輸入框稍窄 */
+        }
+        .cost-input-row button {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: 30px; /* 刪除按鈕固定寬度 */
+            height: 38px; /* 確保高度對齊輸入框 */
+            line-height: 20px;
+            margin-left: 5px;
+        }
+        .cost-input-row button:hover {
+            background-color: #d9363e;
+        }
+        #addCostButton {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        #addCostButton:hover {
+            background-color: #0056b3;
+        }
+        .average-cost-display {
+            font-size: 1em;
+            font-weight: bold;
+            color: #1890ff;
+            margin-top: 10px;
+            padding: 5px;
+            border: 1px dashed #91d5ff;
+            border-radius: 4px;
+            background-color: #e6f7ff;
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
@@ -199,7 +131,7 @@
         
         <div class="input-section">
             <div class="input-group">
-                <label for="amount" class="input-label">提領日圓金額 (日圓)：<span class="default-hint">(預設值：250,000 JPY，可修改)</span></label>
+                <label for="amount" class="input-label">本次提領日圓金額 (日圓)：<span class="default-hint">(預設值：250,000 JPY，可修改)</span></label>
                 <input type="number" id="amount" value="250000"> 
                 <div class="quick-amount-buttons">
                     <button onclick="setAmount(50000)">¥5萬</button>
@@ -210,12 +142,28 @@
                     <button onclick="setAmount(500000)">¥50萬</button>
                 </div>
             </div>
+
             <div class="input-group">
-                <label for="cost" class="input-label">原始買進成本 (台幣/日圓)：<span class="default-hint">(預設值：0.1989 NTD/JPY)</span></label>
-                <input type="number" id="cost" value="0.1989" step="0.0001">
+                <label class="input-label">
+                    日圓買入成本紀錄 (分批買入計算**加權平均成本**)
+                    <span class="default-hint">(請輸入您手上所有日圓的買入紀錄)</span>
+                </label>
+                
+                <div class="cost-input-row" style="font-weight: bold; font-size: 0.9em; margin-bottom: 5px;">
+                    <span class="label-jpy">日圓金額 (¥)</span>
+                    <span class="label-rate">買進成本 (NTD/JPY)</span>
+                    <span style="width: 30px;"></span>
+                </div>
+                
+                <div id="costInputsContainer">
+                    </div>
+                
+                <button id="addCostButton" onclick="addCostInput()">+ 新增一筆買入紀錄</button>
+                
+                <div id="averageCostDisplay" class="average-cost-display">
+                    </div>
             </div>
-            
-            <div class="input-group">
+            <hr> <div class="input-group">
                 <label for="spotRate" class="input-label">
                     <span class="spot-rate-label">提領日即期匯率 (牌告賣出) *</span>：
                     <span class="default-hint">(預設值：0.2003 NTD/JPY)</span>
@@ -285,7 +233,7 @@
     </div>
 
     <div class="version-info">
-        Version: 2.14 (速算表格移除小數點和捲軸) 版權所有@gemini 設計者 zeroffa
+        Version: 2.15 (支援多筆買入成本計算加權平均成本) 版權所有@gemini 設計者 zeroffa
     </div>
 
     <script src="calculator.js"></script>
