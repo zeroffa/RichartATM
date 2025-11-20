@@ -95,10 +95,11 @@
         /* 輸入樣式 */
         .input-group { margin-bottom: 20px; }
         .input-label { display: block; font-weight: bold; margin-bottom: 5px; }
+        /* V2.8 修正：預設值加入千分位分隔 */
         .default-hint { font-weight: normal; color: #666; font-size: 0.9em; margin-left: 10px; }
         input[type="number"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
         
-        /* **V2.6 新增** 快速金額按鈕樣式 */
+        /* 快速金額按鈕樣式 */
         .quick-amount-buttons { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
         .quick-amount-buttons button {
             padding: 8px 10px;
@@ -169,7 +170,7 @@
         
         <div class="input-section">
             <div class="input-group">
-                <label for="amount" class="input-label">提領日圓金額 (日圓)：<span class="default-hint">(預設值：250000 JPY)</span></label>
+                <label for="amount" class="input-label">提領日圓金額 (日圓)：<span class="default-hint">(預設值：250,000 JPY)</span></label>
                 <input type="number" id="amount" value="250000"> 
                 <div class="quick-amount-buttons">
                     <button onclick="setAmount(50000)">¥5萬</button>
@@ -235,9 +236,8 @@
         ** ATM 據點資訊：** <a href="https://www.taishinbank.com.tw/TSB/service-and-support/atm-location/" target="_blank">台新銀行外幣 ATM 據點</a> (備註：外幣 ATM 提領日圓以 **¥5000** 面額為主)
         <br>
         ** 線上結匯資訊：**
-        <a href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank">臺灣銀行牌告匯率 (Easy購比較參考)</a>
-        <br>
-        ** 兆豐 線上結匯：** <a href="https://www.megabank.com.tw/personal/deposit-remittance/foreign-exchange/online-fx/online-fx-apply" target="_blank">兆豐銀行線上結匯 (megabank.com.tw)</a>
+        <a href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank">臺灣銀行牌告匯率 (Easy購比較參考)</a>、
+        <a href="https://www.megabank.com.tw/personal/deposit-remittance/foreign-exchange/online-fx/online-fx-apply" target="_blank">兆豐銀行線上結匯 (megabank.com.tw)</a>
     </p>
     
     <div id="disclaimer-footer">
@@ -246,7 +246,7 @@
     </div>
 
     <div class="version-info">
-        Version: 2.6 (新增金額快速按鈕與數值格式化)
+        Version: 2.8 (預設值數字格式修正與按鈕修復)
     </div>
 
     <script src="calculator.js"></script>
