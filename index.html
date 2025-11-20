@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JPY Cost Calc</title>
     <style>
-        /* (CSS 樣式保持 V2.17 不變) */
+        /* (CSS 樣式保持 V2.18/V2.19 不變) */
         body { 
             font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
             max-width: 1000px; 
@@ -57,7 +57,7 @@
         #quickDifference .positive-diff { color: #4CAF50; font-weight: bold; }
         .version-info { margin-top: 25px; font-size: 0.8em; color: #888; text-align: right; width: 100%; }
 
-        /* V2.15 新增：多筆買入紀錄樣式 */
+        /* V2.15/V2.17 新增：多筆買入紀錄樣式 */
         #costInputsContainer { 
             display: flex;
             flex-direction: column;
@@ -120,6 +120,7 @@
         #addCostButton:hover {
             background-color: #0056b3;
         }
+        /* V2.20 修正：讓這個區塊的內容置中 */
         .average-cost-display {
             font-size: 1em;
             font-weight: bold;
@@ -129,7 +130,7 @@
             border: 1px dashed #91d5ff;
             border-radius: 4px;
             background-color: #e6f7ff;
-            text-align: center;
+            text-align: center; /* V2.20 置中 */
         }
 
     </style>
@@ -150,12 +151,12 @@
                 <label for="amount" class="input-label">本次提領日圓金額 (日圓)：<span class="default-hint">(預設值：250,000 JPY，可修改)</span></label>
                 <input type="number" id="amount" value="250000"> 
                 <div class="quick-amount-buttons">
-                    <button onclick="setAmount(50000)">¥5萬</button>
-                    <button onclick="setAmount(100000)">¥10萬</button>
-                    <button onclick="setAmount(150000)">¥15萬</button>
-                    <button onclick="setAmount(200000)">¥20萬</button>
-                    <button onclick="setAmount(300000)">¥30萬</button>
-                    <button onclick="setAmount(500000)">¥50萬</button>
+                    <button onclick="setAmount(50000, true)">¥5萬</button>
+                    <button onclick="setAmount(100000, true)">¥10萬</button>
+                    <button onclick="setAmount(150000, true)">¥15萬</button>
+                    <button onclick="setAmount(200000, true)">¥20萬</button>
+                    <button onclick="setAmount(300000, true)">¥30萬</button>
+                    <button onclick="setAmount(500000, true)">¥50萬</button>
                 </div>
             </div>
 
@@ -176,17 +177,17 @@
             <hr> <div class="input-group">
                 <label for="spotRate" class="input-label">
                     <span class="spot-rate-label">提領日即期匯率 (牌告賣出) *</span>：
-                    <span class="default-hint">(預設值：0.2003 NTD/JPY)</span>
+                    <span class="default-hint">(預設值：0.1993 NTD/JPY)</span>
                 </label>
-                <input type="number" id="spotRate" value="0.2003" step="0.0001">
+                <input type="number" id="spotRate" value="0.1993" step="0.0001">
             </div>
             
             <div class="input-group">
                 <label for="cashRate" class="input-label">
                     <span class="cash-rate-label">提領日現鈔匯率 (牌告賣出) *</span>：
-                    <span class="default-hint">(預設值：0.1995 NTD/JPY)</span>
+                    <span class="default-hint">(預設值：0.2002 NTD/JPY)</span>
                 </label>
-                <input type="number" id="cashRate" value="0.1995" step="0.0001">
+                <input type="number" id="cashRate" value="0.2002" step="0.0001">
             </div>
             
             <div class="input-group">
@@ -202,7 +203,7 @@
                 <p style="font-weight:bold;">【重要公告與限制】</p>
                 <p>※ 外幣 ATM 提領手續費，自 2025/06/06 起調整為：</p>
                 <p>「**當日台新銀行牌告即期匯率與現鈔匯率差額 * 0.5**」計收，最低收費 **100 元**。</p>
-                <p>**※ 重點提醒：若計算出的手續費低於 100 元，仍將會被收取 100 元最低費用。**</p>
+                <p>**※ 注意：當即期 < 現鈔時，計算的差額會為負值，但最低仍會收取 100 元手續費。**</p>
                 <p>※ 部份機型最高提領張數為 **150 張/筆**。（日圓面額多為 ¥5000）</p>
             </div>
 
@@ -243,7 +244,7 @@
     </div>
 
     <div class="version-info">
-        Version: 2.18 (修正新增紀錄重複初始化問題) 版權所有@gemini 設計者 zeroffa
+        Version: 2.20 (修正匯率預設值、多筆成本顯示置中、新增快速金額按鈕警告機制) 版權所有@gemini 設計者 zeroffa
     </div>
 
     <script src="calculator.js"></script>
