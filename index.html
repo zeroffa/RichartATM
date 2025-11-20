@@ -25,7 +25,7 @@
             text-align: center;
         }
         
-        /* 免責聲明通用樣式 (上方與下方共用基礎) */
+        /* 免責聲明通用樣式 */
         #disclaimer, #disclaimer-footer {
             font-size: 0.8em;
             color: #990000;
@@ -38,7 +38,7 @@
         
         /* 上方免責聲明專用邊距與置中 */
         #disclaimer {
-            margin: 15px auto; /* 置中並增加上下邊距 */
+            margin: 15px auto; 
             max-width: 90%; 
         }
 
@@ -74,7 +74,7 @@
         /* --- 手機版 (窄螢幕) 響應式優化 --- */
         @media (max-width: 768px) {
             .container {
-                flex-direction: column; /* 垂直堆疊 */
+                flex-direction: column; 
             }
             .input-section, .result-section {
                 min-width: 100%;
@@ -98,10 +98,29 @@
         .default-hint { font-weight: normal; color: #666; font-size: 0.9em; margin-left: 10px; }
         input[type="number"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
         
+        /* **V2.6 新增** 快速金額按鈕樣式 */
+        .quick-amount-buttons { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+        .quick-amount-buttons button {
+            padding: 8px 10px;
+            border: 1px solid #007bff;
+            background-color: #e6f7ff;
+            color: #007bff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            flex-grow: 1;
+            min-width: 70px;
+        }
+        .quick-amount-buttons button:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+
         /* 數值顏色標示 */
         .result-value { color: #007bff; font-weight: bold; font-size: 1.1em; }
-        .final-cost { color: #cc0000; font-size: 1.2em; }
-        .final-savings { color: #4CAF50; font-size: 1.2em; }
+        .final-cost { color: #cc0000; font-weight: bold; font-size: 1.2em; }
+        .final-savings { color: #4CAF50; font-weight: bold; font-size: 1.2em; }
         hr { border: 0; border-top: 1px dashed #ccc; margin: 15px 0; }
         
         /* 複製按鈕 */
@@ -114,7 +133,7 @@
         }
         #quickDifference { 
             background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; 
-            display: none; /* 【摺疊】 預設隱藏差價速算區塊 */
+            display: none; 
         }
         
         /* 摺疊/展開 樣式 */
@@ -152,6 +171,14 @@
             <div class="input-group">
                 <label for="amount" class="input-label">提領日圓金額 (日圓)：<span class="default-hint">(預設值：250000 JPY)</span></label>
                 <input type="number" id="amount" value="250000"> 
+                <div class="quick-amount-buttons">
+                    <button onclick="setAmount(50000)">¥5萬</button>
+                    <button onclick="setAmount(100000)">¥10萬</button>
+                    <button onclick="setAmount(150000)">¥15萬</button>
+                    <button onclick="setAmount(200000)">¥20萬</button>
+                    <button onclick="setAmount(300000)">¥30萬</button>
+                    <button onclick="setAmount(500000)">¥50萬</button>
+                </div>
             </div>
             <div class="input-group">
                 <label for="cost" class="input-label">原始買進成本 (台幣/日圓)：<span class="default-hint">(預設值：0.1989 NTD/JPY)</span></label>
@@ -219,7 +246,7 @@
     </div>
 
     <div class="version-info">
-        Version: 2.5 (結匯資訊更新/新增兆豐連結)
+        Version: 2.6 (新增金額快速按鈕與數值格式化)
     </div>
 
     <script src="calculator.js"></script>
