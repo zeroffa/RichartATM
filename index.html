@@ -15,15 +15,38 @@
             border-radius: 8px;
         }
         
-        /* **【V2.2 修正】** 標題置中 */
+        /* 標題置中 */
         h2 {
             text-align: center;
         }
         
-        /* **【V2.2 修正】** 標題下的第一段說明文字置中 */
+        /* 標題下的第一段說明文字置中 */
         body > p:first-of-type {
             text-align: center;
         }
+        
+        /* 免責聲明通用樣式 (上方與下方共用基礎) */
+        #disclaimer, #disclaimer-footer {
+            font-size: 0.8em;
+            color: #990000;
+            background-color: #ffebeb;
+            border: 1px solid #ffcccc;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        /* 上方免責聲明專用邊距與置中 */
+        #disclaimer {
+            margin: 15px auto; /* 置中並增加上下邊距 */
+            max-width: 90%; 
+        }
+
+        /* 下方免責聲明專用邊距 */
+        #disclaimer-footer {
+            margin-top: 20px;
+        }
+
 
         /* 電腦版 (寬螢幕) - 左右並排佈局 */
         .container {
@@ -112,21 +135,16 @@
 
         .version-info { margin-top: 25px; font-size: 0.8em; color: #888; text-align: right; width: 100%; }
         
-        #disclaimer {
-            font-size: 0.8em;
-            color: #990000;
-            background-color: #ffebeb;
-            border: 1px solid #ffcccc;
-            padding: 10px;
-            margin-top: 20px;
-            border-radius: 4px;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
     <h2>💰 Richart 日圓提領成本試算器</h2>
     <p>試算提領日圓現鈔的實際手續費及攤提後總成本 (台幣/日圓)。結果會即時更新。</p>
+    
+    <div id="disclaimer">
+        **【免責聲明】** 此網頁僅供參考試算使用，所有計算結果不具任何法律效力或交易依據。
+        實際費用與匯率請以銀行牌告及交易當下系統計算為準，使用者須自行承擔準確性風險。
+    </div>
 
     <div class="container">
         
@@ -192,12 +210,13 @@
         ** 台銀匯率資訊：** <a href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank">臺灣銀行牌告匯率 (Easy購比較參考)</a>
     </p>
     
-    <div id="disclaimer">
-        **【免責聲明】** 此網頁僅供參考試算使用，所有計算結果不具任何法律效力或交易依據。實際費用與匯率請以銀行牌告及交易當下系統計算為準，使用者須自行承擔準確性風險。
+    <div id="disclaimer-footer">
+        **【免責聲明】** 此網頁僅供參考試算使用，所有計算結果不具任何法律效力或交易依據。
+        實際費用與匯率請以銀行牌告及交易當下系統計算為準，使用者須自行承擔準確性風險。
     </div>
 
     <div class="version-info">
-        Version: 2.2 (標題置中修正)
+        Version: 2.4 (雙重免責聲明)
     </div>
 
     <script src="calculator.js"></script>
