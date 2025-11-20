@@ -37,9 +37,8 @@
             box-sizing: border-box;
         }
 
-        /* 輸入標籤和預設值樣式 */
         .input-group {
-            margin-bottom: 20px; /* 增加輸入組之間的間距 */
+            margin-bottom: 20px; 
         }
         .input-label {
             display: block;
@@ -52,8 +51,6 @@
             font-size: 0.9em;
             margin-left: 10px;
         }
-
-        /* 輸入方格樣式 */
         input[type="number"] { 
             width: 100%; 
             padding: 10px; 
@@ -64,17 +61,16 @@
         
         /* 數值顏色標示 */
         .result-value {
-            color: #007bff; /* 藍色標記計算結果 */
+            color: #007bff; 
             font-weight: bold;
             font-size: 1.1em;
         }
-        /* 特別強調總成本和節省金額 */
         .final-cost {
-            color: #cc0000; /* 紅色強調最終成本 */
+            color: #cc0000; 
             font-size: 1.2em;
         }
         .final-savings {
-            color: #4CAF50; /* 綠色標記節省金額 */
+            color: #4CAF50; 
             font-size: 1.2em;
         }
         
@@ -98,6 +94,17 @@
             background-color: #45a049;
         }
         
+        /* 詳細計算區塊樣式 */
+        #detailCalculation {
+            background-color: #fff;
+            padding: 10px;
+            margin-top: 15px;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
         .version-info {
             margin-top: 25px;
             font-size: 0.8em;
@@ -129,6 +136,7 @@
             <div class="input-group">
                 <label for="spotRate" class="input-label">提領日即期匯率 (牌告賣出) *：<span class="default-hint">(預設值：0.2003 NTD/JPY)</span></label>
                 <input type="number" id="spotRate" value="0.2003" step="0.0001">
+
             </div>
 
             <div class="input-group">
@@ -137,26 +145,34 @@
             </div>
             
             <div class="input-group">
-                <label for="compareRate" class="input-label">外部結匯比較匯率 (例如台銀)：<span class="default-hint">(預設值：0.2021 NTD/JPY)</span></label>
+                <label for="compareRate" class="input-label">外部結匯比較匯率 (例如台銀 Easy購)：<span class="default-hint">(預設值：0.2021 NTD/JPY)</span></label>
                 <input type="number" id="compareRate" value="0.2021" step="0.0001">
+                <p style="font-size:0.8em; margin-top:5px;"><a href="https://bot.com.tw" target="_blank">臺灣銀行 Easy購外幣現鈔系統 (bot.com.tw)</a></p>
             </div>
 
         </div>
 
         <div class="result-section">
-            <h3>計算結果 <span style="font-size:0.8em; color:#444;">(手續費公式：(即期 - 現鈔) × 0.5，最低 100 元)</span></h3>
+            <h3>計算結果 <span style="font-size:0.8em; color:#444;">(結果已即時更新)</span></h3>
             <div id="resultsContainer">
                 </div>
             
             <button id="copyButton" onclick="copyResults()">複製結果內容</button>
+
+            <div id="detailCalculation">
+                </div>
         </div>
 
     </div>
 
-    <p style="font-size:0.8em; color:#888; margin-top:20px;">* 請以台新銀行當日牌告賣出匯率為準。</p>
+    <p style="font-size:0.8em; color:#888; margin-top:20px;">
+        * 請以台新銀行當日牌告賣出匯率為準。
+        <br>
+        ** ATM 據點資訊：** <a href="https://www.taishinbank.com.tw" target="_blank">ATM/補摺機據點 - 台新銀行 (taishinbank.com.tw)</a> (備註：外幣 ATM 提領日圓以 **¥5000** 面額為主)
+    </p>
 
     <div class="version-info">
-        Version: 1.2 (Color Highlight & Layout Optimization)
+        Version: 1.3 (Detail Calculation & External Links)
     </div>
 
     <script src="calculator.js"></script>
