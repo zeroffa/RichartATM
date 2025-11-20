@@ -15,7 +15,10 @@ function formatCurrency(number, currencySymbol) {
     return `${currencySymbol}${formattedNumber}`;
 }
 
-// 設定快速金額按鈕的值
+/**
+ * V2.8 修復：設定快速金額按鈕的值，並確保立即觸發計算。
+ * @param {number} value 要設定的日圓金額
+ */
 function setAmount(value) {
     const amountInput = document.getElementById('amount');
     amountInput.value = value;
@@ -171,7 +174,7 @@ function copyResults() {
     const quickDifference = document.getElementById('quickDifference');
     const disclaimer = document.getElementById('disclaimer'); 
     
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.6) ---\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.8) ---\n` +
                      `提領日圓金額: ¥${parseFloat(document.getElementById('amount').value).toLocaleString('zh-TW')}\n` +
                      `原始買進成本: ${document.getElementById('cost').value} NTD/JPY\n` +
                      `即期匯率: ${document.getElementById('spotRate').value} / 現鈔匯率: ${document.getElementById('cashRate').value}\n` +
@@ -202,6 +205,12 @@ function copyResults() {
 }
 
 
+// 將函數暴露給 HTML 呼叫 (V2.8: 提前定義，確保按鈕能找到它)
+window.copyResults = copyResults;
+window.toggleContent = toggleContent; 
+window.setAmount = setAmount; 
+
+
 // 設定即時監聽事件
 function setupEventListeners() {
     const inputIds = ['amount', 'cost', 'spotRate', 'cashRate', 'compareRate'];
@@ -216,8 +225,5 @@ function setupEventListeners() {
     calculateCost();
 }
 
-// 將函數暴露給 HTML 呼叫
-window.copyResults = copyResults;
-window.toggleContent = toggleContent; 
-window.setAmount = setAmount; // **V2.6 新增** 快速金額按鈕呼叫函數
+// 頁面載入完成後執行
 window.onload = setupEventListeners;
