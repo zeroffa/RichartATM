@@ -327,7 +327,7 @@ function calculateCost() {
     `;
 
     // 7. 更新詳細計算過程
-    // V2.17 變更：使用動態成本標題
+    // V2.19 修正：確保所有成本名稱都使用 costTitle 變數
     detailCalculation.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】</p>
         <p>1. **${costTitle}**： <span class="final-cost">${cost.toFixed(6)}</span> 台幣/日圓</p>
@@ -358,7 +358,7 @@ function copyResults() {
     const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost(); 
     
     // 更新複製內容中的版本資訊
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.18) 版權所有@gemini 設計者 zeroffa ---\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.19) 版權所有@gemini 設計者 zeroffa ---\n` +
                      `提領日圓金額: ${formatCurrency(parseFloat(document.getElementById('amount').value), '¥')}\n` +
                      `總買入日圓金額: ${formatCurrency(totalJPY, '¥')}\n` + 
                      `**${costTitle}**: ${cost.toFixed(6)} NTD/JPY\n` + 
