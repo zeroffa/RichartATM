@@ -48,8 +48,8 @@
                 flex: auto;
             }
             .result-section {
-                border-left: 1px solid #b0e0e6; /* 手機版移除左側粗藍線，改為全邊框 */
-                border-top: 5px solid #1e90ff; /* 藍色邊框改到上方，增加區隔感 */
+                border-left: 1px solid #b0e0e6;
+                border-top: 5px solid #1e90ff;
             }
         }
         
@@ -75,12 +75,22 @@
         #copyButton { margin-top: 10px; padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
         #copyButton:hover { background-color: #45a049; }
         
-        /* 詳細計算與速算區塊 */
+        /* 詳細計算與速算區塊 (樣式不變，但速算區塊預設隱藏) */
         #detailCalculation { 
             background-color: #fff; padding: 10px; margin-top: 15px; border: 1px dashed #ccc; border-radius: 4px; font-size: 0.9em; line-height: 1.6; 
         }
         #quickDifference { 
-            background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 15px; border-radius: 4px; font-size: 0.9em; 
+            background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; 
+            display: none; /* **【摺疊】** 預設隱藏差價速算區塊 */
+        }
+        
+        /* 摺疊/展開 樣式 */
+        .toggle-btn {
+            font-size: 0.9em;
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-left: 10px;
         }
         
         /* 差價速算區表格 */
@@ -91,7 +101,17 @@
         #quickDifference .positive-diff { color: #4CAF50; font-weight: bold; }
 
         .version-info { margin-top: 25px; font-size: 0.8em; color: #888; text-align: right; width: 100%; }
-        button { display: none; } 
+        
+        #disclaimer {
+            font-size: 0.8em;
+            color: #990000;
+            background-color: #ffebeb;
+            border: 1px solid #ffcccc;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -102,8 +122,8 @@
         
         <div class="input-section">
             <div class="input-group">
-                <label for="amount" class="input-label">提領日圓金額 (日圓)：<span class="default-hint">(預設值：260000 JPY)</span></label>
-                <input type="number" id="amount" value="260000">
+                <label for="amount" class="input-label">提領日圓金額 (日圓)：<span class="default-hint">(預設值：250000 JPY)</span></label>
+                <input type="number" id="amount" value="250000"> 
             </div>
             <div class="input-group">
                 <label for="cost" class="input-label">原始買進成本 (台幣/日圓)：<span class="default-hint">(預設值：0.1989 NTD/JPY)</span></label>
@@ -130,6 +150,7 @@
                 <p style="font-weight:bold;">【重要公告與限制】</p>
                 <p>※ 外幣 ATM 提領手續費，自 2025/06/06 起調整為：</p>
                 <p>「**當日台新銀行牌告即期匯率與現鈔匯率差額 * 0.5**」計收，最低收費 **100 元**。</p>
+                <p>**※ 重點提醒：若計算出的手續費低於 100 元，仍將會被收取 100 元最低費用。**</p>
                 <p>※ 部份機型最高提領張數為 **150 張/筆**。（日圓面額多為 ¥5000）</p>
             </div>
 
@@ -143,6 +164,10 @@
                 <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】</p>
                 </div>
 
+            <p style="font-weight:bold; margin-bottom: 5px; margin-top: 15px;">
+                不同金額差價速算 (手續費攤提影響)
+                <span id="toggleQuickBtn" class="toggle-btn" onclick="toggleContent('quickDifference')">點此顯示/隱藏</span>
+            </p>
             <div id="quickDifference">
                 </div>
 
@@ -150,15 +175,21 @@
     </div>
 
     <p style="font-size:0.8em; color:#888; margin-top:20px;">
-        * 請以台新銀行當日牌告賣出匯率為準。
+        * 請以台新銀行當日牌告賣出匯率為準。 <a href="https://richart.tw/TSBank.Web/personal/deposit/atm-service/fx-atm/" target="_blank">Richart 外幣服務說明</a>
         <br>
         ** ATM 據點資訊：** <a href="https://www.taishinbank.com.tw/TSB/personal/deposit/atm-service/fx-atm/" target="_blank">台新銀行外幣 ATM/補摺機據點</a> (備註：外幣 ATM 提領日圓以 **¥5000** 面額為主)
+        <br>
+        ** 台銀匯率資訊：** <a href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank">臺灣銀行牌告匯率 (Easy購比較參考)</a>
     </p>
-
-    <div class="version-info">
-        Version: 1.9 (速算金額更新)
+    
+    <div id="disclaimer">
+        **【免責聲明】** 此網頁僅供參考試算使用，所有計算結果不具任何法律效力或交易依據。實際費用與匯率請以銀行牌告及交易當下系統計算為準，使用者須自行承擔準確性風險。
     </div>
 
-    <script src="calculator.js"></script> 
+    <div class="version-info">
+        Version: 2.0 (差價速算摺疊/預設值修正/連結補充)
+    </div>
+
+    <script src="calculator.js"></script>
 </body>
 </html>
