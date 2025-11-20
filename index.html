@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JPY Cost Calc</title>
     <style>
-        /* (CSS 樣式保持 V2.15/V2.16 不變) */
+        /* (CSS 樣式保持 V2.17 不變) */
         body { 
             font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
             max-width: 1000px; 
@@ -58,7 +58,7 @@
         .version-info { margin-top: 25px; font-size: 0.8em; color: #888; text-align: right; width: 100%; }
 
         /* V2.15 新增：多筆買入紀錄樣式 */
-        #costInputsContainer { /* 設置容器為 Flex 讓標題和輸入框可以排版 */
+        #costInputsContainer { 
             display: flex;
             flex-direction: column;
         }
@@ -69,6 +69,11 @@
              margin-bottom: 5px;
              gap: 10px;
         }
+        .cost-input-header span:first-child { flex: 1.5; }
+        .cost-input-header span:nth-child(2) { flex: 1; }
+        .cost-input-header span:last-child { width: 30px; }
+
+
         .cost-input-row {
             display: flex;
             gap: 10px;
@@ -163,7 +168,7 @@
                 <div id="costInputsContainer">
                     </div>
                 
-                <button id="addCostButton" onclick="addCostInput(50000, 0.1989, true)">+ 新增一筆買入紀錄</button> 
+                <button id="addCostButton" onclick="addCostInput(50000, 0.1989, false)">+ 新增一筆買入紀錄</button> 
                 
                 <div id="averageCostDisplay" class="average-cost-display">
                     </div>
@@ -238,7 +243,7 @@
     </div>
 
     <div class="version-info">
-        Version: 2.17 (修正為預設單一買進成本，多筆時動態計算加權平均) 版權所有@gemini 設計者 zeroffa
+        Version: 2.18 (修正新增紀錄重複初始化問題) 版權所有@gemini 設計者 zeroffa
     </div>
 
     <script src="calculator.js"></script>
