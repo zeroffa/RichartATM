@@ -15,6 +15,16 @@
             border-radius: 8px;
         }
         
+        /* **【V2.2 修正】** 標題置中 */
+        h2 {
+            text-align: center;
+        }
+        
+        /* **【V2.2 修正】** 標題下的第一段說明文字置中 */
+        body > p:first-of-type {
+            text-align: center;
+        }
+
         /* 電腦版 (寬螢幕) - 左右並排佈局 */
         .container {
             display: flex;
@@ -81,7 +91,7 @@
         }
         #quickDifference { 
             background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; 
-            display: none; /* **【摺疊】** 預設隱藏差價速算區塊 */
+            display: none; /* 【摺疊】 預設隱藏差價速算區塊 */
         }
         
         /* 摺疊/展開 樣式 */
@@ -187,7 +197,7 @@
     </div>
 
     <div class="version-info">
-        Version: 2.0 (差價速算摺疊/預設值修正/連結補充)
+        Version: 2.2 (標題置中修正)
     </div>
 
     <script src="calculator.js"></script>
