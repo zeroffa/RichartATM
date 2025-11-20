@@ -7,7 +7,7 @@
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            max-width: 1000px; /* 增加最大寬度以容納左右兩欄 */
+            max-width: 1000px; 
             margin: 20px auto; 
             padding: 20px; 
             border: 1px solid #ccc; 
@@ -15,24 +15,20 @@
             border-radius: 8px;
         }
         
-        /* 容器佈局：分為左右兩欄 */
         .container {
             display: flex;
-            flex-wrap: wrap; /* 確保在小螢幕上可以堆疊 */
+            flex-wrap: wrap; 
             gap: 20px;
         }
 
-        /* 輸入區塊 (左側) */
         .input-section {
             flex: 1;
-            min-width: 300px; /* 確保有足夠的最小寬度 */
+            min-width: 300px; 
         }
         
-        /* 結果區塊 (右側) */
         .result-section {
             flex: 1;
             min-width: 350px;
-            /* 讓結果區塊看起來像一個面板 */
             border: 1px solid #b0e0e6; 
             border-left: 5px solid #1e90ff; 
             background-color: #f0f8ff; 
@@ -41,10 +37,23 @@
             box-sizing: border-box;
         }
 
-        label, input { 
-            display: block; 
-            margin-bottom: 5px; 
+        /* 輸入標籤和預設值樣式 */
+        .input-group {
+            margin-bottom: 20px; /* 增加輸入組之間的間距 */
         }
+        .input-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .default-hint {
+            font-weight: normal;
+            color: #666;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        /* 輸入方格樣式 */
         input[type="number"] { 
             width: 100%; 
             padding: 10px; 
@@ -53,24 +62,28 @@
             border-radius: 4px;
         }
         
-        .default-value { 
-            color: #666; 
-            font-size: 0.9em; 
-            margin-bottom: 2px; 
-        }
-
-        /* 結果樣式 */
-        .result strong { 
-            color: #cc0000; 
+        /* 數值顏色標示 */
+        .result-value {
+            color: #007bff; /* 藍色標記計算結果 */
+            font-weight: bold;
             font-size: 1.1em;
         }
+        /* 特別強調總成本和節省金額 */
+        .final-cost {
+            color: #cc0000; /* 紅色強調最終成本 */
+            font-size: 1.2em;
+        }
+        .final-savings {
+            color: #4CAF50; /* 綠色標記節省金額 */
+            font-size: 1.2em;
+        }
+        
         hr {
             border: 0;
             border-top: 1px dashed #ccc;
             margin: 15px 0;
         }
         
-        /* 複製按鈕樣式 */
         #copyButton {
             margin-top: 10px;
             padding: 8px 15px;
@@ -85,7 +98,6 @@
             background-color: #45a049;
         }
         
-        /* 版本號樣式 */
         .version-info {
             margin-top: 25px;
             font-size: 0.8em;
@@ -93,7 +105,6 @@
             text-align: right;
             width: 100%;
         }
-        /* 隱藏佔位按鈕 */
         button { display: none; } 
     </style>
 </head>
@@ -104,25 +115,31 @@
     <div class="container">
         
         <div class="input-section">
-            <div class="default-value">預設值：260000 JPY</div>
-            <label for="amount">提領日圓金額 (JPY)：</label>
-            <input type="number" id="amount" value="260000">
-
-            <div class="default-value">預設值：0.1989 NTD/JPY (您的成本)</div>
-            <label for="cost">原始買進成本 (NTD/JPY)：</label>
-            <input type="number" id="cost" value="0.1989" step="0.0001">
-
-            <div class="default-value">預設值：0.2003 NTD/JPY (需每日查詢)</div>
-            <label for="spotRate">提領日即期匯率 (牌告賣出) *：</label>
-            <input type="number" id="spotRate" value="0.2003" step="0.0001">
-
-            <div class="default-value">預設值：0.1995 NTD/JPY (需每日查詢)</div>
-            <label for="cashRate">提領日現鈔匯率 (牌告賣出) *：</label>
-            <input type="number" id="cashRate" value="0.1995" step="0.0001">
             
-            <div class="default-value">預設值：0.2021 NTD/JPY (台銀線上結匯比較基準)</div>
-            <label for="compareRate">外部結匯比較匯率 (例如台銀)：</label>
-            <input type="number" id="compareRate" value="0.2021" step="0.0001">
+            <div class="input-group">
+                <label for="amount" class="input-label">提領日圓金額 (JPY)：<span class="default-hint">(預設值：260000 JPY)</span></label>
+                <input type="number" id="amount" value="260000">
+            </div>
+
+            <div class="input-group">
+                <label for="cost" class="input-label">原始買進成本 (NTD/JPY)：<span class="default-hint">(預設值：0.1989 NTD/JPY)</span></label>
+                <input type="number" id="cost" value="0.1989" step="0.0001">
+            </div>
+
+            <div class="input-group">
+                <label for="spotRate" class="input-label">提領日即期匯率 (牌告賣出) *：<span class="default-hint">(預設值：0.2003 NTD/JPY)</span></label>
+                <input type="number" id="spotRate" value="0.2003" step="0.0001">
+            </div>
+
+            <div class="input-group">
+                <label for="cashRate" class="input-label">提領日現鈔匯率 (牌告賣出) *：<span class="default-hint">(預設值：0.1995 NTD/JPY)</span></label>
+                <input type="number" id="cashRate" value="0.1995" step="0.0001">
+            </div>
+            
+            <div class="input-group">
+                <label for="compareRate" class="input-label">外部結匯比較匯率 (例如台銀)：<span class="default-hint">(預設值：0.2021 NTD/JPY)</span></label>
+                <input type="number" id="compareRate" value="0.2021" step="0.0001">
+            </div>
 
         </div>
 
@@ -139,7 +156,7 @@
     <p style="font-size:0.8em; color:#888; margin-top:20px;">* 請以台新銀行當日牌告賣出匯率為準。</p>
 
     <div class="version-info">
-        Version: 1.1 (Optimized for Real-time Calculation & Layout)
+        Version: 1.2 (Color Highlight & Layout Optimization)
     </div>
 
     <script src="calculator.js"></script>
