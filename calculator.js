@@ -3,15 +3,25 @@ const QUICK_AMOUNTS = [1000, 5000, 10000, 50000, 100000, 200000, 300000, 500000,
 const MIN_FEE = 100; // 最低手續費
 
 /**
- * V2.6 新增：格式化數字為貨幣字串，包含千分位
+ * V2.13 修正：格式化數字為貨幣字串，NT$ 進行四捨五入到整數。
  * @param {number} number 待格式化的數字
  * @param {string} currencySymbol 貨幣符號 (例如: '¥', '$', 'NT$')
  * @returns {string} 格式化後的字串
  */
 function formatCurrency(number, currencySymbol) {
     if (isNaN(number)) return '';
-    // 使用 toLocaleString 確保千分位分隔，並取小數點後兩位 (貨幣通常保留兩位)
-    const formattedNumber = number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    
+    let formattedNumber;
+    
+    // 如果是台幣 (NT$)，四捨五入到整數
+    if (currencySymbol === 'NT$') {
+        // 先四捨五入到整數，然後再格式化千分位
+        formattedNumber = Math.round(number).toLocaleString('zh-TW');
+    } else {
+        // 其他幣別 (如日圓 ¥)，維持小數點兩位，並格式化千分位
+        formattedNumber = number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
     return `${currencySymbol}${formattedNumber}`;
 }
 
@@ -40,7 +50,7 @@ function toggleContent(contentId) {
     
     // 如果目前是隱藏狀態 (display: none)，則切換為顯示 (display: block)
     if (content.style.display === 'none' || content.style.display === '') {
-        content.style.display = 'block';
+        content.style.display = 'block'; 
     } else {
         // 否則，切換為隱藏
         content.style.display = 'none';
@@ -70,7 +80,7 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
         const savings = externalCost - richartExpense;
         const diffClass = savings >= 0 ? 'positive-diff' : 'negative-diff';
         
-        // V2.6：使用 formatCurrency 格式化結果
+        // V2.13：日圓仍維持無小數位，台幣使用四捨五入
         tableHtml += `
             <tr>
                 <td>${formatCurrency(amount, '¥').replace('.00', '')}</td> 
@@ -139,6 +149,7 @@ function calculateCost() {
     const savings = externalCost - totalExpense;
 
     // 6. 更新簡要結果
+    // V2.13: formatCurrency 已將 NT$ 四捨五入
     resultsContainer.innerHTML = `
         <p>實際提領手續費：<span class="result-value">${formatCurrency(actualFee, 'NT$')}</span> ${feeNoteSimple}</p>
         <p>納入手續費後，日圓**單位總成本**：<span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
@@ -148,6 +159,7 @@ function calculateCost() {
     `;
 
     // 7. 更新詳細計算過程
+    // V2.13: formatCurrency 已將 NT$ 四捨五入
     detailCalculation.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】</p>
         <p>1. 原始換匯成本： ${formatCurrency(amount, '¥').replace('.00', '')} × ${cost.toFixed(4)} 台幣/日圓 = ${formatCurrency(totalOriginalCost, 'NT$')}</p>
@@ -174,7 +186,8 @@ function copyResults() {
     const quickDifference = document.getElementById('quickDifference');
     const disclaimer = document.getElementById('disclaimer'); 
     
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.10) ---\n` +
+    // 更新複製內容中的版本資訊
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.13) 版權所有@gemini 設計者 zeroffa ---\n` +
                      `提領日圓金額: ¥${parseFloat(document.getElementById('amount').value).toLocaleString('zh-TW')}\n` +
                      `原始買進成本: ${document.getElementById('cost').value} NTD/JPY\n` +
                      `即期匯率: ${document.getElementById('spotRate').value} / 現鈔匯率: ${document.getElementById('cashRate').value}\n` +
@@ -184,7 +197,7 @@ function copyResults() {
                      resultsContainer.innerText;
 
     // 無論是否摺疊，都複製詳細內容
-    fullText += '\n\n【詳細計算過程】\n' + detailCalculation.innerText + '\n\n' + quickDifference.innerText;
+    fullText += '\n\n【詳細計算過程】(台幣金額已四捨五入至整數)\n' + detailCalculation.innerText + '\n\n' + quickDifference.innerText;
     
     // 在底部再加一次免責聲明 (讓複製的文字檔更完整)
     fullText += '\n\n--- 頁尾免責聲明 ---\n' + disclaimer.innerText; 
