@@ -58,14 +58,25 @@ function calculateUnitCost(amount, cost, spotRate, cashRate) {
     return totalExpense;
 }
 
-// 切換內容顯示/隱藏的函數
-function toggleContent(contentId) {
+/**
+ * V2.21 修正：切換內容顯示/隱藏的函數，並同時更改按鈕文字
+ * @param {string} contentId 內容區塊的 ID
+ * @param {string} buttonId 切換按鈕的 ID
+ */
+function toggleContent(contentId, buttonId) {
     const content = document.getElementById(contentId);
+    const button = document.getElementById(buttonId);
     
     if (content.style.display === 'none' || content.style.display === '') {
-        content.style.display = 'block'; 
+        content.style.display = 'block';
+        if (button) {
+            button.innerText = '點此隱藏';
+        } 
     } else {
         content.style.display = 'none';
+        if (button) {
+            button.innerText = '點此顯示';
+        }
     }
 }
 
@@ -265,6 +276,8 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
         <p style="font-size:0.8em;">(使用匯率：${costTitle} **${cost.toFixed(6)}** / 即期 **${spotRate.toFixed(4)}** / 現鈔 **${cashRate.toFixed(4)}**)</p>
         ${tableHtml}
     `;
+    
+    // V2.21 修正：移除計算時強制顯示 quickDifference 的邏輯，讓它保持被 toggle 的狀態
 }
 
 
@@ -287,19 +300,14 @@ function calculateCost() {
         resultsContainer.innerHTML = `<p style="color:red;">請檢查提領金額及所有匯率/成本數值是否正確填寫。</p>`;
         detailCalculation.innerHTML = '<p style="color:red;">請先填寫正確匯率及至少一筆有效的買入成本紀錄。</p>';
         quickDifference.innerHTML = `<p style="color:red; font-size:0.9em;">請先填寫正確匯率及成本。</p>`;
+        // V2.21 修正：在無效時，確保這兩個區塊仍為隱藏
+        detailCalculation.style.display = 'none';
         quickDifference.style.display = 'none'; 
         return;
     }
 
-    // 確保速算區塊的顯示狀態
-    const toggleBtn = document.getElementById('toggleQuickBtn');
-    if(toggleBtn && toggleBtn.innerText.includes('隱藏')) {
-        quickDifference.style.display = 'block';
-    } else {
-        quickDifference.style.display = 'none';
-    }
-
-
+    // V2.21 修正：移除計算時對 toggle 狀態的檢查和設定，讓它保持被 toggle 的狀態
+    
     // --- Richart 手續費計算 ---
     const feePreliminary = amount * (spotRate - cashRate) * 0.5;
     const actualFee = Math.max(MIN_FEE, feePreliminary);
@@ -340,7 +348,6 @@ function calculateCost() {
     `;
 
     // 7. 更新詳細計算過程
-    // V2.19 修正：確保所有成本名稱都使用 costTitle 變數
     detailCalculation.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】</p>
         <p>1. **${costTitle}**： <span class="final-cost">${cost.toFixed(6)}</span> 台幣/日圓</p>
@@ -371,7 +378,7 @@ function copyResults() {
     const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost(); 
     
     // 更新複製內容中的版本資訊
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.20) 版權所有@gemini 設計者 zeroffa ---\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.21) 版權所有@gemini 設計者 zeroffa ---\n` +
                      `提領日圓金額: ${formatCurrency(parseFloat(document.getElementById('amount').value), '¥')}\n` +
                      `總買入日圓金額: ${formatCurrency(totalJPY, '¥')}\n` + 
                      `**${costTitle}**: ${cost.toFixed(6)} NTD/JPY\n` + 
@@ -431,6 +438,20 @@ function setupEventListeners() {
         // 傳遞 true 表示這是初始化時的預設紀錄
         addCostInput(250000, 0.1989, true); 
     }
+
+    // V2.21 修正：在頁面載入時，將詳細計算和速算區塊預設為隱藏
+    const detailContent = document.getElementById('detailCalculation');
+    const quickContent = document.getElementById('quickDifference');
+    
+    if (detailContent) detailContent.style.display = 'none';
+    if (quickContent) quickContent.style.display = 'none';
+    
+    // 確保按鈕文字也是「點此顯示」
+    const detailButton = document.getElementById('toggleDetailBtn');
+    const quickButton = document.getElementById('toggleQuickBtn');
+    
+    if (detailButton) detailButton.innerText = '點此顯示';
+    if (quickButton) quickButton.innerText = '點此顯示';
     
     // 初始計算會在 addCostInput 內部調用，這裡再次呼叫確保所有欄位都被初始化
     calculateCost();
