@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JPY Cost Calc</title>
     <style>
-        /* (CSS 樣式保持 V2.18/V2.19 不變) */
+        /* (CSS 樣式保持 V2.20 大部分不變) */
         body { 
             font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
             max-width: 1000px; 
@@ -43,11 +43,11 @@
         .result-value { color: #007bff; font-weight: bold; font-size: 1.1em; }
         .final-cost { color: #cc0000; font-weight: bold; font-size: 1.2em; }
         .final-savings { color: #4CAF50; font-weight: bold; font-size: 1.2em; }
-        hr { border: 0; border-top: 1px dashed #ccc; margin: 15px 0; }
+        hr { border: 0; border-top: 1px dashed #ccc; margin: 15px 10px; } /* 修正：縮短 hr 寬度 */
         #copyButton { margin-top: 10px; padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
         #copyButton:hover { background-color: #45a049; }
-        #detailCalculation { background-color: #fff; padding: 10px; margin-top: 15px; border: 1px dashed #ccc; border-radius: 4px; font-size: 0.9em; line-height: 1.6; }
-        #quickDifference { background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; display: none; }
+        #detailCalculation { background-color: #fff; padding: 10px; margin-top: 5px; border: 1px dashed #ccc; border-radius: 4px; font-size: 0.9em; line-height: 1.6; } /* 修正：移除 margin-top: 15px; */
+        #quickDifference { background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; }
         .toggle-btn { font-size: 0.9em; color: #007bff; cursor: pointer; text-decoration: underline; margin-left: 10px; }
         #quickDifference table { width: 100%; border-collapse: collapse; margin-top: 5px; }
         #quickDifference th, #quickDifference td { padding: 4px 5px; text-align: right; border-bottom: 1px solid #f0f0f0; word-wrap: break-word; }
@@ -120,7 +120,6 @@
         #addCostButton:hover {
             background-color: #0056b3;
         }
-        /* V2.20 修正：讓這個區塊的內容置中 */
         .average-cost-display {
             font-size: 1em;
             font-weight: bold;
@@ -130,7 +129,7 @@
             border: 1px dashed #91d5ff;
             border-radius: 4px;
             background-color: #e6f7ff;
-            text-align: center; /* V2.20 置中 */
+            text-align: center; 
         }
 
     </style>
@@ -213,14 +212,18 @@
             
             <button id="copyButton" onclick="copyResults()">複製所有計算內容</button>
 
+            <p style="font-weight:bold; margin-bottom: 5px; margin-top: 15px;">
+                詳細計算過程
+                <span style="font-weight:normal; color:#cc0000; font-size:0.9em;">(台幣金額已四捨五入至整數)</span> 
+                <span id="toggleDetailBtn" class="toggle-btn" onclick="toggleContent('detailCalculation', 'toggleDetailBtn')">點此顯示</span>
+            </p>
             <div id="detailCalculation">
-                <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】 <span style="font-weight:normal; color:#cc0000; font-size:0.9em;">(台幣金額已四捨五入至整數)</span></p>
                 </div>
 
             <p style="font-weight:bold; margin-bottom: 5px; margin-top: 15px;">
                 不同金額差價速算 (手續費攤提影響)
                 <span style="font-weight:normal; color:#cc0000; font-size:0.9em;">(結果已四捨五入至整數)</span> 
-                <span id="toggleQuickBtn" class="toggle-btn" onclick="toggleContent('quickDifference')">點此顯示/隱藏</span>
+                <span id="toggleQuickBtn" class="toggle-btn" onclick="toggleContent('quickDifference', 'toggleQuickBtn')">點此顯示</span>
             </p>
             <div id="quickDifference">
                 </div>
@@ -244,7 +247,7 @@
     </div>
 
     <div class="version-info">
-        Version: 2.20 (修正匯率預設值、多筆成本顯示置中、新增快速金額按鈕警告機制) 版權所有@gemini 設計者 zeroffa
+        Version: 2.21 (修正手機板：**詳細計算** 及 **不同金額差價速算** 預設隱藏，以按鈕切換顯示) 版權所有@gemini 設計者 zeroffa
     </div>
 
     <script src="calculator.js"></script>
