@@ -20,7 +20,6 @@ function setAmount(value, fromQuickButton = false, isInternalUpdate = false) {
     const amountInput = document.getElementById('amount');
     const recordCount = document.querySelectorAll('.cost-input-row').length;
     
-    // V3.2 修正：更新提示文字
     const bankName = '台新銀行(含Richart帳戶)'; 
 
     if (fromQuickButton && !isInternalUpdate && recordCount > 1) {
@@ -213,6 +212,8 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
     const quickDifferenceElement = document.getElementById('quickDifference');
     const { costTitle } = getAverageCost(); 
     
+    const bankName = '台新銀行(含Richart帳戶)'; // 確保名稱一致性
+
     if (isNaN(cost)) {
         quickDifferenceElement.innerHTML = `<p style="color:red; font-size:0.9em;">請先輸入有效的日圓買入成本紀錄，才能計算速算。</p>`;
         return;
@@ -223,7 +224,7 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
             <thead>
                 <tr>
                     <th>提領金額 (日圓)</th>
-                    <th>台新銀行(含Richart) 總支出</th>
+                    <th>${bankName} 總支出</th>
                     <th>台銀 Easy購總成本</th>
                     <th>差價 (節省金額)</th>
                 </tr>
@@ -271,7 +272,7 @@ function calculateCost() {
     const detailCalculation = document.getElementById('detailCalculation');
     const quickDifference = document.getElementById('quickDifference');
     
-    const bankName = '台新銀行(含Richart帳戶)'; // V3.2 修正：銀行名稱
+    const bankName = '台新銀行(含Richart帳戶)'; // V3.3 確保名稱一致性
 
     if (isNaN(finalAmount) || finalAmount <= 0 || isNaN(cost) || isNaN(spotRate) || isNaN(cashRate) || isNaN(compareRate)) {
         resultsContainer.innerHTML = `<p style="color:red;">請檢查提領金額及所有匯率/成本數值是否正確填寫。</p>`;
@@ -303,10 +304,11 @@ function calculateCost() {
     const externalCost = finalAmount * compareRate;
     const savings = externalCost - totalExpense;
 
-    // V3.2 修正：新增台新購總成本 (totalExpense) 行
+    // V3.3 修正：新增台銀 Easy購單位總成本
     resultsContainer.innerHTML = `
         <p>實際提領手續費 (預估)：<span class="result-value">${formatCurrency(actualFee, 'NT$')}</span> ${feeNoteSimple}</p>
         <p>納入手續費後，日圓**單位總成本**：<span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
+        <p>台銀 Easy購單位總成本 (匯率 ${compareRate.toFixed(6)})：<span class="final-cost">${compareRate.toFixed(6)}</span> 台幣/日圓</p>
         <p>**${bankName} 提領總支出**：<span class="result-value">${formatCurrency(totalExpense, 'NT$')}</span></p>
         <hr>
         <p>台銀 Easy購總成本 (匯率 ${compareRate.toFixed(4)})：<span class="result-value">${formatCurrency(externalCost, 'NT$')}</span></p>
@@ -327,7 +329,8 @@ function calculateCost() {
         <hr>
         <p>8. 台銀 Easy購總成本： ${formatCurrency(finalAmount, '¥')} × ${compareRate.toFixed(4)} = ${formatCurrency(externalCost, 'NT$')}</p>
         <p>9. 淨節省金額： ${formatCurrency(externalCost, 'NT$')} (台銀) - ${formatCurrency(totalExpense, 'NT$')} (${bankName} ) = <span class="final-savings">${formatCurrency(savings, 'NT$')}</span></p>
-    `;
+        
+        `;
     
     updateQuickDifference(cost, spotRate, cashRate, compareRate);
 }
@@ -340,8 +343,8 @@ function copyResults() {
     const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost(); 
     const finalAmount = parseFloat(document.getElementById('amount').value);
     
-    // V3.2 修正：更新複製內容版本資訊與標題
-    let fullText = `--- 台新銀行ATM提領外幣手續費試算器 結算結果 (V3.2) 版權所有@gemini 設計者 zeroffa ---\n` +
+    // V3.3 修正：更新複製內容版本資訊
+    let fullText = `--- 台新銀行ATM提領外幣手續費試算器 結算結果 (V3.3) 版權所有@gemini 設計者 zeroffa ---\n` +
                      `本次提領日圓金額: ${formatCurrency(finalAmount, '¥')}\n` +
                      `總買入日圓金額: ${formatCurrency(totalJPY, '¥')}\n` + 
                      `**${costTitle}**: ${cost.toFixed(6)} NTD/JPY\n` + 
