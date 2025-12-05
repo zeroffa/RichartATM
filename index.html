@@ -4,91 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JPY Cost Calc</title>
-    <style>
-        /* (CSS 樣式保持 V2.26 基礎，無須大幅變動) */
-        body { 
-            font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
-            max-width: 1000px; 
-            margin: 20px auto; 
-            padding: 20px; 
-            border: 1px solid #ccc; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
-        }
-        h2 { text-align: center; }
-        body > p:first-of-type { text-align: center; }
-        #disclaimer, #disclaimer-footer { font-size: 0.8em; color: #990000; background-color: #ffebeb; border: 1px solid #ffcccc; padding: 10px; border-radius: 4px; text-align: center; }
-        .no-break { white-space: nowrap; }
-        #disclaimer { margin: 15px auto; max-width: 90%; }
-        #disclaimer-footer { margin-top: 20px; }
-        .container { display: flex; flex-wrap: wrap; gap: 20px; }
-        .input-section { flex: 1; min-width: 300px; }
-        .result-section { flex: 1; min-width: 350px; border: 1px solid #b0e0e6; border-left: 5px solid #1e90ff; background-color: #f0f8ff; padding: 15px; border-radius: 4px; box-sizing: border-box; }
-        @media (max-width: 768px) {
-            .container { flex-direction: column; }
-            .input-section, .result-section { min-width: 100%; flex: auto; }
-            .result-section { border-left: 1px solid #b0e0e6; border-top: 5px solid #1e90ff; }
-        }
-        #announcement { background-color: #fff3cd; border: 1px solid #ffeeba; padding: 10px; margin-bottom: 15px; border-radius: 4px; font-size: 0.9em; color: #856404; }
-        #announcement p { margin: 0; padding: 2px 0; }
-        .input-group { margin-bottom: 20px; }
-        .input-label { display: block; font-weight: bold; margin-bottom: 5px; }
-        .default-hint { font-weight: normal; color: #666; font-size: 0.9em; margin-left: 10px; }
-        input[type="number"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
-        
-        /* 禁用欄位樣式 (反白) */
-        input[type="number"].readonly-field {
-            background-color: #e9ecef; /* 灰色背景 */
-            color: #495057;
-            cursor: not-allowed;
-            border-color: #ced4da;
-        }
-        
-        #modeHint {
-            font-size: 0.85em;
-            margin-top: 5px;
-            font-weight: bold;
-        }
-        .hint-single { color: #28a745; } 
-        .hint-multi { color: #dc3545; }  
-
-        .spot-rate-label { color: #007bff; }
-        .cash-rate-label { color: #28a745; }
-        .quick-amount-buttons { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
-        .quick-amount-buttons button { padding: 8px 10px; border: 1px solid #007bff; background-color: #e6f7ff; color: #007bff; border-radius: 4px; cursor: pointer; font-size: 0.9em; flex-grow: 1; min-width: 70px; }
-        .quick-amount-buttons button:hover { background-color: #007bff; color: white; }
-        .result-value { color: #007bff; font-weight: bold; font-size: 1.1em; }
-        .final-cost { color: #cc0000; font-weight: bold; font-size: 1.2em; }
-        .final-savings { color: #4CAF50; font-weight: bold; font-size: 1.2em; }
-        hr { border: 0; border-top: 1px dashed #ccc; margin: 15px 10px; } 
-        #copyButton { margin-top: 10px; padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
-        #copyButton:hover { background-color: #45a049; }
-        #detailCalculation { background-color: #fff; padding: 10px; margin-top: 5px; border: 1px dashed #ccc; border-radius: 4px; font-size: 0.9em; line-height: 1.6; } 
-        #quickDifference { background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; display: none; overflow-x: auto; white-space: nowrap; }
-        .toggle-btn { font-size: 0.9em; color: #007bff; cursor: pointer; text-decoration: underline; margin-left: 10px; }
-        #quickDifference table { width: 100%; border-collapse: collapse; margin-top: 5px; table-layout: fixed; }
-        #quickDifference th, #quickDifference td { padding: 4px 8px; text-align: right; border-bottom: 1px solid #f0f0f0; }
-        #quickDifference th:first-child, #quickDifference td:first-child { text-align: left; }
-        #quickDifference .negative-diff { color: #fa541c; font-weight: bold; }
-        #quickDifference .positive-diff { color: #4CAF50; font-weight: bold; }
-        .version-info { margin-top: 25px; font-size: 0.8em; color: #888; text-align: right; width: 100%; }
-
-        #costInputsContainer { display: flex; flex-direction: column; }
-        .cost-input-header { display: flex; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; gap: 10px; }
-        .cost-input-header span:first-child { flex: 1.5; }
-        .cost-input-header span:nth-child(2) { flex: 1; }
-        .cost-input-header span:last-child { width: 30px; }
-        .cost-input-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-        .cost-input-row input[type="number"] { padding: 8px; flex: 1; min-width: 0; }
-        .cost-input-row .label-jpy { flex: 1.5; }
-        .cost-input-row .label-rate { flex: 1; }
-        .cost-input-row .remove-btn { background-color: #ff4d4f; color: white; border: none; border-radius: 4px; padding: 8px 10px; cursor: pointer; font-size: 0.9em; width: 30px; height: 38px; line-height: 20px; margin-left: 5px; }
-        .cost-input-row .remove-btn:hover { background-color: #d9363e; }
-        #addCostButton { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
-        #addCostButton:hover { background-color: #0056b3; }
-        .average-cost-display { font-size: 1em; font-weight: bold; color: #1890ff; margin-top: 10px; padding: 5px; border: 1px dashed #91d5ff; border-radius: 4px; background-color: #e6f7ff; text-align: center; }
-
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h2>💰 Richart 日圓提領成本試算器</h2>
@@ -139,7 +55,7 @@
                     <span class="cash-rate-label">提領日現鈔匯率 (牌告現鈔賣出) *</span>：
                     <span class="default-hint">(預設值：0.2002 NTD/JPY)</span>
                 </label>
-                <input type="number" id="cashRate" value="0.2002" step="0.0001" style="background-color: #f0fff4; border-color: #28a745;">
+                <input type="number" id="cashRate" value="0.2002" step="0.0001" class="cash-rate-input">
             </div>
 
             <div class="input-group">
@@ -147,7 +63,7 @@
                     <span class="spot-rate-label">提領日即期匯率 (牌告即期賣出) *</span>：
                     <span class="default-hint">(預設值：0.1993 NTD/JPY)</span>
                 </label>
-                <input type="number" id="spotRate" value="0.1993" step="0.0001" style="background-color: #e6f7ff; border-color: #007bff;">
+                <input type="number" id="spotRate" value="0.1993" step="0.0001" class="spot-rate-input">
             </div>
             
             <div class="input-group">
@@ -165,7 +81,7 @@
                 <p>「**當日台新銀行牌告即期匯率與現鈔匯率差額 * 0.5**」計收，最低收費 **100 元**。</p>
                 <p>**※ 注意：**</p>
                 <p>1. 當即期 < 現鈔時，計算的差額會為負值，但最低仍會收取 **100 元** 手續費。</p>
-                <p>2. **(V2.23 實務提醒)** 根據使用者回饋，**低額提領時的實際手續費可能高於 NT$100** (例如提領 ¥120,000 時實收 NT$150)，試算器仍以 NT$100 為最低門檻計算，結果僅供參考，請以銀行實際收費為準。</p>
+                <p>2. 根據使用者回饋，**低額提領時的實際手續費可能高於 NT$100** (例如提領 ¥120,000 時實收 NT$150)，試算器仍以 NT$100 為最低門檻計算，結果僅供參考，請以銀行實際收費為準。</p>
                 <p>※ 部份機型最高提領張數為 **150 張/筆**。（日圓面額多為 ¥5000）</p>
             </div>
 
@@ -174,16 +90,16 @@
             
             <button id="copyButton" onclick="copyResults()">複製所有計算內容</button>
 
-            <p style="font-weight:bold; margin-bottom: 5px; margin-top: 15px;">
+            <p class="detail-header">
                 詳細計算過程
-                <span style="font-weight:normal; color:#cc0000; font-size:0.9em;">(台幣金額已四捨五入至整數)</span> 
+                <span class="detail-note">(台幣金額已四捨五入至整數)</span> 
                 <span id="toggleDetailBtn" class="toggle-btn" onclick="toggleContent('detailCalculation', 'toggleDetailBtn')">點此顯示</span>
             </p>
             <div id="detailCalculation"></div>
 
-            <p style="font-weight:bold; margin-bottom: 5px; margin-top: 15px;">
+            <p class="detail-header">
                 不同金額差價速算 (手續費攤提影響)
-                <span style="font-weight:normal; color:#cc0000; font-size:0.9em;">(結果已四捨五入至整數)</span> 
+                <span class="detail-note">(結果已四捨五入至整數)</span> 
                 <span id="toggleQuickBtn" class="toggle-btn" onclick="toggleContent('quickDifference', 'toggleQuickBtn')">點此顯示</span>
             </p>
             <div id="quickDifference"></div>
@@ -191,7 +107,25 @@
         </div>
     </div>
 
-    <p style="font-size:0.8em; color:#888; margin-top:20px;">
-        * 請以台新銀行當日牌告賣出匯率為準。 <a href="https://richart.tw/TSDIB_RichartWeb/foreign-currency/demand-deposit?hash=sectionDiv1&offsetY=180" target="_blank">Richart 外幣匯率</a>
+    <p class="footer-info">
+        * 請以台新銀行當日牌告賣出匯率為準。 <a href="https://richart.tw/TSDIB_RichartWeb/foreign-currency/demand-deposit?hash=sectionDiv1&offsetY=180" target="_blank">台新 外幣匯率</a>
         <br>
-        ** ATM 據點資訊：** <a href="
+        ** ATM 據點資訊：** <a href="https://www.taishinbank.com.tw/TSB/service-and-support/atm-location/" target="_blank">台新銀行外幣 ATM 據點</a> (備註：外幣 ATM 提領日圓以 **¥5000** 面額為主)
+        <br>
+        ** 線上結匯資訊：**
+        <a href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank">臺灣銀行牌告匯率 (Easy購比較參考)</a>、
+        <a href="https://www.megabank.com.tw/personal/deposit-remittance/foreign-exchange/online-fx/online-fx-apply" target="_blank">兆豐銀行線上結匯 (megabank.com.tw)</a>
+    </p>
+    
+    <div id="disclaimer-footer">
+        **【免責聲明】** 此網頁僅供參考試算使用，所有計算結果不具任何法律效力或交易依據。
+        <span class="no-break">實際費用與匯率請以銀行牌告及交易當下系統計算為準，使用者須自行承擔準確性風險。</span>
+    </div>
+
+    <div class="version-info">
+        Version: 3.0 (結構優化：將樣式分離至 style.css) 版權所有@gemini 設計者 zeroffa
+    </div>
+
+    <script src="calculator.js"></script>
+</body>
+</html>
