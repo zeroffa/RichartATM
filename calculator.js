@@ -20,8 +20,11 @@ function setAmount(value, fromQuickButton = false, isInternalUpdate = false) {
     const amountInput = document.getElementById('amount');
     const recordCount = document.querySelectorAll('.cost-input-row').length;
     
+    // V3.2 修正：更新提示文字
+    const bankName = '台新銀行(含Richart帳戶)'; 
+
     if (fromQuickButton && !isInternalUpdate && recordCount > 1) {
-        alert("【多筆日幣計算中】\n\n警告：您目前有多筆買入紀錄，正在計算加權平均成本。\n\n此快速按鈕僅更改上方的「本次提領日圓金額」，您的多筆買入成本紀錄不會被影響。");
+        alert(`【多筆日幣計算中】\n\n警告：您目前有多筆買入紀錄，正在計算加權平均成本。\n\n此快速按鈕僅更改上方的「本次提領日圓金額」，您的多筆買入成本紀錄不會被影響。`);
     }
 
     if (parseFloat(amountInput.value) !== value) {
@@ -220,7 +223,7 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
             <thead>
                 <tr>
                     <th>提領金額 (日圓)</th>
-                    <th>Richart 總支出</th>
+                    <th>台新銀行(含Richart) 總支出</th>
                     <th>台銀 Easy購總成本</th>
                     <th>差價 (節省金額)</th>
                 </tr>
@@ -268,6 +271,8 @@ function calculateCost() {
     const detailCalculation = document.getElementById('detailCalculation');
     const quickDifference = document.getElementById('quickDifference');
     
+    const bankName = '台新銀行(含Richart帳戶)'; // V3.2 修正：銀行名稱
+
     if (isNaN(finalAmount) || finalAmount <= 0 || isNaN(cost) || isNaN(spotRate) || isNaN(cashRate) || isNaN(compareRate)) {
         resultsContainer.innerHTML = `<p style="color:red;">請檢查提領金額及所有匯率/成本數值是否正確填寫。</p>`;
         detailCalculation.style.display = 'none';
@@ -276,7 +281,6 @@ function calculateCost() {
     }
 
     // 計算邏輯
-    // 使用 (現鈔 - 即期) 確保匯差為正數
     const rateDifference = cashRate - spotRate;
     const feePreliminary_raw = finalAmount * rateDifference * 0.5;
     const actualFee = Math.max(MIN_FEE, feePreliminary_raw);
@@ -299,13 +303,14 @@ function calculateCost() {
     const externalCost = finalAmount * compareRate;
     const savings = externalCost - totalExpense;
 
-    // 顯示結果
+    // V3.2 修正：新增台新購總成本 (totalExpense) 行
     resultsContainer.innerHTML = `
         <p>實際提領手續費 (預估)：<span class="result-value">${formatCurrency(actualFee, 'NT$')}</span> ${feeNoteSimple}</p>
         <p>納入手續費後，日圓**單位總成本**：<span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
+        <p>**${bankName} 提領總支出**：<span class="result-value">${formatCurrency(totalExpense, 'NT$')}</span></p>
         <hr>
         <p>台銀 Easy購總成本 (匯率 ${compareRate.toFixed(4)})：<span class="result-value">${formatCurrency(externalCost, 'NT$')}</span></p>
-        <p><strong> Richart 提領淨節省金額：<span class="final-savings">${formatCurrency(savings, 'NT$')}</span> (負值表示較貴)</strong></p>
+        <p><strong> ${bankName} 提領淨節省金額：<span class="final-savings">${formatCurrency(savings, 'NT$')}</span> (負值表示較貴)</strong></p>
     `;
 
     // 詳細計算
@@ -321,7 +326,7 @@ function calculateCost() {
         <p>7. 攤提成本： ${formatCurrency(totalExpense, 'NT$')} ÷ ${formatCurrency(finalAmount, '¥')} = <span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
         <hr>
         <p>8. 台銀 Easy購總成本： ${formatCurrency(finalAmount, '¥')} × ${compareRate.toFixed(4)} = ${formatCurrency(externalCost, 'NT$')}</p>
-        <p>9. 淨節省金額： ${formatCurrency(externalCost, 'NT$')} (台銀) - ${formatCurrency(totalExpense, 'NT$')} (Richart) = <span class="final-savings">${formatCurrency(savings, 'NT$')}</span></p>
+        <p>9. 淨節省金額： ${formatCurrency(externalCost, 'NT$')} (台銀) - ${formatCurrency(totalExpense, 'NT$')} (${bankName} ) = <span class="final-savings">${formatCurrency(savings, 'NT$')}</span></p>
     `;
     
     updateQuickDifference(cost, spotRate, cashRate, compareRate);
@@ -334,9 +339,9 @@ function copyResults() {
     const disclaimer = document.getElementById('disclaimer'); 
     const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost(); 
     const finalAmount = parseFloat(document.getElementById('amount').value);
-
-    // V3.0 複製內容版本更新
-    let fullText = `--- JPY Cost Calc 結算結果 (V3.0) 版權所有@gemini 設計者 zeroffa ---\n` +
+    
+    // V3.2 修正：更新複製內容版本資訊與標題
+    let fullText = `--- 台新銀行ATM提領外幣手續費試算器 結算結果 (V3.2) 版權所有@gemini 設計者 zeroffa ---\n` +
                      `本次提領日圓金額: ${formatCurrency(finalAmount, '¥')}\n` +
                      `總買入日圓金額: ${formatCurrency(totalJPY, '¥')}\n` + 
                      `**${costTitle}**: ${cost.toFixed(6)} NTD/JPY\n` + 
