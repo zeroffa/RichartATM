@@ -34,6 +34,7 @@ function setAmount(value, fromQuickButton = false, isInternalUpdate = false) {
 }
 
 function calculateUnitCost(amount, cost, spotRate, cashRate) {
+    // 使用正向差額計算初算金額
     const feePreliminary = amount * (cashRate - spotRate) * 0.5;
     const actualFee = Math.max(MIN_FEE, feePreliminary);
     const totalOriginalCost = amount * cost;
@@ -132,6 +133,7 @@ function updateInputState(recordCount, totalJPY) {
     const resultTitle = document.getElementById('resultTitle');
 
     if (recordCount > 1) {
+        // 多筆模式：鎖定上方欄位
         amountInput.disabled = true;
         amountInput.classList.add('readonly-field');
         amountInput.value = totalJPY; 
@@ -141,6 +143,7 @@ function updateInputState(recordCount, totalJPY) {
         resultTitle.innerHTML = '計算結果 <span style="font-size:0.8em; color:#cc0000;">(多筆加權平均模式)</span>';
         
     } else {
+        // 單筆模式：解鎖
         amountInput.disabled = false;
         amountInput.classList.remove('readonly-field');
         
@@ -180,6 +183,7 @@ function getAverageCost() {
         costTitle = "加權平均成本";
         titleElement.innerHTML = `日圓買入成本紀錄 (分批買入計算**加權平均成本**) <span class="default-hint">(請輸入您手上所有日圓的買入紀錄)</span>`;
         if (totalJPY > 0) {
+            // 使用自動同步，參數：值, 是否來自快速按鈕, 是否為內部更新
             setAmount(totalJPY, false, true); 
         }
     } else {
@@ -196,6 +200,7 @@ function getAverageCost() {
         displayElement.innerHTML = `請新增有效的日圓買入紀錄`;
     }
 
+    // 呼叫 updateInputState 更新介面狀態
     updateInputState(validRecords, totalJPY);
 
     return { averageCost, totalJPY, recordCount: validRecords, costTitle };
@@ -250,7 +255,9 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
 
 
 function calculateCost() {
-    const amount = parseFloat(document.getElementById('amount').value);
+    const amountInput = document.getElementById('amount');
+    const finalAmount = parseFloat(amountInput.value);
+
     const spotRate = parseFloat(document.getElementById('spotRate').value);
     const cashRate = parseFloat(document.getElementById('cashRate').value);
     const compareRate = parseFloat(document.getElementById('compareRate').value); 
@@ -261,8 +268,6 @@ function calculateCost() {
     const detailCalculation = document.getElementById('detailCalculation');
     const quickDifference = document.getElementById('quickDifference');
     
-    const finalAmount = parseFloat(document.getElementById('amount').value);
-
     if (isNaN(finalAmount) || finalAmount <= 0 || isNaN(cost) || isNaN(spotRate) || isNaN(cashRate) || isNaN(compareRate)) {
         resultsContainer.innerHTML = `<p style="color:red;">請檢查提領金額及所有匯率/成本數值是否正確填寫。</p>`;
         detailCalculation.style.display = 'none';
@@ -270,8 +275,8 @@ function calculateCost() {
         return;
     }
 
-    
-    // --- Richart 手續費計算 ---
+    // 計算邏輯
+    // 使用 (現鈔 - 即期) 確保匯差為正數
     const rateDifference = cashRate - spotRate;
     const feePreliminary_raw = finalAmount * rateDifference * 0.5;
     const actualFee = Math.max(MIN_FEE, feePreliminary_raw);
@@ -288,21 +293,13 @@ function calculateCost() {
         feeNoteDetail = `<p style="margin-left: 10px; color:#28a745; font-weight:bold;">→ 初算金額已超過或等於最低門檻，依計算金額收取。</p>`;
     }
 
-    // V2.23 修正：為詳細計算過程準備正向的顯示邏輯 (現鈔 - 即期)
-    const rateDifference_positive = cashRate - spotRate;
-    const feePreliminary_positive = finalAmount * rateDifference_positive * 0.5;
-
-
-    // --- Richart 總成本計算 ---
     const totalOriginalCost = finalAmount * cost; 
     const totalExpense = totalOriginalCost + actualFee;
     const totalCostPerUnit = totalExpense / finalAmount;
-
-    // --- 外部結匯成本比較 ---
     const externalCost = finalAmount * compareRate;
     const savings = externalCost - totalExpense;
 
-    // 6. 更新簡要結果
+    // 顯示結果
     resultsContainer.innerHTML = `
         <p>實際提領手續費 (預估)：<span class="result-value">${formatCurrency(actualFee, 'NT$')}</span> ${feeNoteSimple}</p>
         <p>納入手續費後，日圓**單位總成本**：<span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
@@ -311,8 +308,78 @@ function calculateCost() {
         <p><strong> Richart 提領淨節省金額：<span class="final-savings">${formatCurrency(savings, 'NT$')}</span> (負值表示較貴)</strong></p>
     `;
 
-    // 7. 更新詳細計算過程
+    // 詳細計算
     detailCalculation.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】</p>
         <p>1. **${costTitle}**： <span class="final-cost">${cost.toFixed(6)}</span> 台幣/日圓</p>
-        <p
+        <p>2. 原始換匯成本： ${formatCurrency(finalAmount, '¥')} × ${cost.toFixed(6)} (平均成本) = ${formatCurrency(totalOriginalCost, 'NT$')}</p>
+        <p>3. **匯率價差基礎 (現鈔賣 - 即期賣)**： ${cashRate.toFixed(4)} - ${spotRate.toFixed(4)} = **${rateDifference.toFixed(4)}**</p>
+        <p>4. **初算手續費**： ${formatCurrency(finalAmount, '¥')} × ${rateDifference.toFixed(4)} × 0.5 = <span class="result-value">${formatCurrency(feePreliminary_raw, 'NT$')}</span></p>
+        ${feeNoteDetail}
+        <p>5. **實際手續費**： <span class="result-value">${formatCurrency(actualFee, 'NT$')}</span></p>
+        <p>6. **總支出**： ${formatCurrency(totalOriginalCost, 'NT$')} (原始成本) + ${formatCurrency(actualFee, 'NT$')} (手續費) = ${formatCurrency(totalExpense, 'NT$')}</p>
+        <p>7. 攤提成本： ${formatCurrency(totalExpense, 'NT$')} ÷ ${formatCurrency(finalAmount, '¥')} = <span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
+        <hr>
+        <p>8. 台銀 Easy購總成本： ${formatCurrency(finalAmount, '¥')} × ${compareRate.toFixed(4)} = ${formatCurrency(externalCost, 'NT$')}</p>
+        <p>9. 淨節省金額： ${formatCurrency(externalCost, 'NT$')} (台銀) - ${formatCurrency(totalExpense, 'NT$')} (Richart) = <span class="final-savings">${formatCurrency(savings, 'NT$')}</span></p>
+    `;
+    
+    updateQuickDifference(cost, spotRate, cashRate, compareRate);
+}
+
+function copyResults() {
+    const resultsContainer = document.getElementById('resultsContainer');
+    const detailCalculation = document.getElementById('detailCalculation');
+    const quickDifference = document.getElementById('quickDifference');
+    const disclaimer = document.getElementById('disclaimer'); 
+    const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost(); 
+    const finalAmount = parseFloat(document.getElementById('amount').value);
+
+    // V3.0 複製內容版本更新
+    let fullText = `--- JPY Cost Calc 結算結果 (V3.0) 版權所有@gemini 設計者 zeroffa ---\n` +
+                     `本次提領日圓金額: ${formatCurrency(finalAmount, '¥')}\n` +
+                     `總買入日圓金額: ${formatCurrency(totalJPY, '¥')}\n` + 
+                     `**${costTitle}**: ${cost.toFixed(6)} NTD/JPY\n` + 
+                     `即期匯率: ${document.getElementById('spotRate').value} / 現鈔匯率: ${document.getElementById('cashRate').value}\n` +
+                     `外部結匯比較匯率 (Easy購/其他): ${document.getElementById('compareRate').value} NTD/JPY\n` +
+                     `================================\n` +
+                     disclaimer.innerText + '\n' + 
+                     resultsContainer.innerText;
+
+    fullText += '\n\n【詳細計算過程】(台幣金額已四捨五入至整數)\n' + detailCalculation.innerText + '\n\n' + quickDifference.innerText;
+    fullText += '\n\n--- 頁尾免責聲明 ---\n' + disclaimer.innerText; 
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(fullText).then(() => alert('所有計算結果已複製到剪貼簿！'));
+    } else {
+        alert('您的瀏覽器不支援自動複製功能，請手動複製！');
+    }
+}
+
+// 初始化
+function setupEventListeners() {
+    const inputIds = ['amount', 'spotRate', 'cashRate', 'compareRate'];
+    inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', calculateCost);
+    });
+
+    document.getElementById('spotRate').value = '0.1993'; 
+    document.getElementById('cashRate').value = '0.2002';
+
+    if (costInputCounter === 0) { 
+        addCostInput(250000, 0.1989, true); 
+    }
+
+    const detailContent = document.getElementById('detailCalculation');
+    const quickContent = document.getElementById('quickDifference');
+    if (detailContent) detailContent.style.display = 'none';
+    if (quickContent) quickContent.style.display = 'none';
+    
+    document.getElementById('toggleDetailBtn').innerText = '點此顯示';
+    document.getElementById('toggleQuickBtn').innerText = '點此顯示';
+    
+    calculateCost();
+}
+
+window.onload = setupEventListeners;
