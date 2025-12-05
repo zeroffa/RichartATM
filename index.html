@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>～～～換日幣囉～～～</title>
+    <title>JPY Cost Calc</title>
     <style>
-        /* (CSS 樣式保持 V2.23 不變) */
+        /* (CSS 樣式保持 V2.25 基礎，新增狀態提示樣式) */
         body { 
             font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
             max-width: 1000px; 
@@ -35,6 +35,24 @@
         .input-label { display: block; font-weight: bold; margin-bottom: 5px; }
         .default-hint { font-weight: normal; color: #666; font-size: 0.9em; margin-left: 10px; }
         input[type="number"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+        
+        /* 停用欄位樣式 (反白) */
+        input[type="number"].readonly-field {
+            background-color: #e9ecef; /* 灰色背景 */
+            color: #495057;
+            cursor: not-allowed;
+            border-color: #ced4da;
+        }
+        
+        /* 模式提示文字樣式 */
+        #modeHint {
+            font-size: 0.85em;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        .hint-single { color: #28a745; } /* 綠色：單筆自由輸入 */
+        .hint-multi { color: #dc3545; }  /* 紅色：多筆鎖定 */
+
         .spot-rate-label { color: #007bff; }
         .cash-rate-label { color: #28a745; }
         .quick-amount-buttons { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
@@ -147,8 +165,12 @@
         
         <div class="input-section">
             <div class="input-group">
-                <label for="amount" class="input-label">本次提領日圓金額 (日圓)：<span class="default-hint">(多筆成本計算時，此欄位會自動同步為總買入日圓)</span></label>
+                <label for="amount" class="input-label">
+                    本次提領日圓金額 (日圓)：
+                </label>
                 <input type="number" id="amount" value="250000"> 
+                <div id="modeHint" class="hint-single">✓ 單筆模式：可自由輸入提領金額</div>
+
                 <div class="quick-amount-buttons">
                     <button onclick="setAmount(50000, true)">¥5萬</button>
                     <button onclick="setAmount(100000, true)">¥10萬</button>
@@ -162,7 +184,7 @@
             <div class="input-group">
                 <label id="costInputTitle" class="input-label">
                     日圓買入成本紀錄
-                    <span class="default-hint">(請輸入您手上所有日圓的買入紀錄)</span>
+                    <span class="default-hint">(預設單一成本)</span>
                 </label>
                 
                 <div id="costInputsContainer">
@@ -203,12 +225,12 @@
                 <p>※ 外幣 ATM 提領手續費，自 2025/06/06 起調整為：</p>
                 <p>「**當日台新銀行牌告即期匯率與現鈔匯率差額 * 0.5**」計收，最低收費 **100 元**。</p>
                 <p>**※ 注意：**</p>
-                <p>1. 當初算手續費低於 **100 元** 時，將以最低收費 **100 元** 計收。</p>
+                <p>1. 當即期 < 現鈔時，計算的差額會為負值，但最低仍會收取 **100 元** 手續費。</p>
                 <p>2. **(V2.23 實務提醒)** 根據使用者回饋，**低額提領時的實際手續費可能高於 NT$100** (例如提領 ¥120,000 時實收 NT$150)，試算器仍以 NT$100 為最低門檻計算，結果僅供參考，請以銀行實際收費為準。</p>
                 <p>※ 部份機型最高提領張數為 **150 張/筆**。（日圓面額多為 ¥5000）</p>
             </div>
 
-            <h3>計算結果 <span style="font-size:0.8em; color:#444;">(結果已即時更新)</span></h3>
+            <h3 id="resultTitle">計算結果 <span style="font-size:0.8em; color:#444;">(結果已即時更新)</span></h3>
             <div id="resultsContainer">
                 </div>
             
@@ -249,7 +271,7 @@
     </div>
 
     <div class="version-info">
-        Version: 2.24 (優化：詳細計算中，**初算手續費**低於 NT$100 時，會明確列出不足的金額並提醒最低收費) 版權所有@gemini 設計者 zeroffa
+        Version: 2.26 (優化多筆輸入模式：自動反白與提示) 版權所有@gemini 設計者 zeroffa
     </div>
 
     <script src="calculator.js"></script>
