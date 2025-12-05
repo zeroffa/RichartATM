@@ -91,14 +91,14 @@
             <h3 id="resultTitle">計算結果 <span style="font-size:0.8em; color:#444;">(結果已即時更新)</span></h3>
             <div id="resultsContainer"></div>
             
-            <button id="copyButton" onclick="copyResults()">📋 複製全部結果</button> 
-
             <p class="detail-header">
                 詳細計算過程
                 <span class="detail-note">(台幣金額已四捨五入至整數)</span> 
                 <span id="toggleDetailBtn" class="toggle-btn" onclick="toggleContent('detailCalculation', 'toggleDetailBtn')">點此顯示</span>
             </p>
-            <div id="detailCalculation"></div>
+            <div id="detailCalculation">
+                <button id="copyButton" onclick="copyResults()" style="margin-bottom: 10px; width: 100%;">📋 複製全部結果</button> 
+            </div>
 
             <p class="detail-header">
                 不同金額差價速算 (手續費攤提影響)
@@ -126,7 +126,7 @@
     </div>
 
     <div class="version-info">
-        Version: 3.2 (功能更新：加入SEO、優化計算總成本顯示、更新銀行名稱) 版權所有@gemini 設計者 zeroffa
+        Version: 3.3 (功能更新：複製按鈕移至詳細計算內；單位成本速比優化；名稱統一) 版權所有@gemini 設計者 zeroffa
     </div>
 
     <script src="calculator.js"></script>
