@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JPY Cost Calc</title>
     <style>
-        /* (CSS 樣式保持 V2.25 基礎，新增狀態提示樣式) */
+        /* (CSS 樣式保持 V2.26 基礎，無須大幅變動) */
         body { 
             font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
             max-width: 1000px; 
@@ -36,7 +36,7 @@
         .default-hint { font-weight: normal; color: #666; font-size: 0.9em; margin-left: 10px; }
         input[type="number"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
         
-        /* 停用欄位樣式 (反白) */
+        /* 禁用欄位樣式 (反白) */
         input[type="number"].readonly-field {
             background-color: #e9ecef; /* 灰色背景 */
             color: #495057;
@@ -44,14 +44,13 @@
             border-color: #ced4da;
         }
         
-        /* 模式提示文字樣式 */
         #modeHint {
             font-size: 0.85em;
             margin-top: 5px;
             font-weight: bold;
         }
-        .hint-single { color: #28a745; } /* 綠色：單筆自由輸入 */
-        .hint-multi { color: #dc3545; }  /* 紅色：多筆鎖定 */
+        .hint-single { color: #28a745; } 
+        .hint-multi { color: #dc3545; }  
 
         .spot-rate-label { color: #007bff; }
         .cash-rate-label { color: #28a745; }
@@ -65,90 +64,29 @@
         #copyButton { margin-top: 10px; padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; }
         #copyButton:hover { background-color: #45a049; }
         #detailCalculation { background-color: #fff; padding: 10px; margin-top: 5px; border: 1px dashed #ccc; border-radius: 4px; font-size: 0.9em; line-height: 1.6; } 
-        #quickDifference { background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; }
+        #quickDifference { background-color: #e6f7ff; border: 1px solid #91d5ff; padding: 10px; margin-top: 5px; border-radius: 4px; font-size: 0.9em; display: none; overflow-x: auto; white-space: nowrap; }
         .toggle-btn { font-size: 0.9em; color: #007bff; cursor: pointer; text-decoration: underline; margin-left: 10px; }
-        #quickDifference table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        #quickDifference th, #quickDifference td { padding: 4px 5px; text-align: right; border-bottom: 1px solid #f0f0f0; word-wrap: break-word; }
+        #quickDifference table { width: 100%; border-collapse: collapse; margin-top: 5px; table-layout: fixed; }
+        #quickDifference th, #quickDifference td { padding: 4px 8px; text-align: right; border-bottom: 1px solid #f0f0f0; }
         #quickDifference th:first-child, #quickDifference td:first-child { text-align: left; }
-        #quickDifference th { line-height: 1.2; }
         #quickDifference .negative-diff { color: #fa541c; font-weight: bold; }
         #quickDifference .positive-diff { color: #4CAF50; font-weight: bold; }
         .version-info { margin-top: 25px; font-size: 0.8em; color: #888; text-align: right; width: 100%; }
 
-        /* V2.15/V2.17 新增：多筆買入紀錄樣式 */
-        #costInputsContainer { 
-            display: flex;
-            flex-direction: column;
-        }
-        .cost-input-header {
-             display: flex;
-             font-weight: bold; 
-             font-size: 0.9em; 
-             margin-bottom: 5px;
-             gap: 10px;
-        }
+        #costInputsContainer { display: flex; flex-direction: column; }
+        .cost-input-header { display: flex; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; gap: 10px; }
         .cost-input-header span:first-child { flex: 1.5; }
         .cost-input-header span:nth-child(2) { flex: 1; }
         .cost-input-header span:last-child { width: 30px; }
-
-
-        .cost-input-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-        .cost-input-row input[type="number"] {
-            padding: 8px;
-            flex: 1; 
-            min-width: 0; 
-        }
-        .cost-input-row .label-jpy {
-            flex: 1.5; 
-        }
-        .cost-input-row .label-rate {
-            flex: 1; 
-        }
-        .cost-input-row .remove-btn {
-            background-color: #ff4d4f;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 10px;
-            cursor: pointer;
-            font-size: 0.9em;
-            width: 30px; 
-            height: 38px; 
-            line-height: 20px;
-            margin-left: 5px;
-        }
-        .cost-input-row .remove-btn:hover {
-            background-color: #d9363e;
-        }
-        #addCostButton {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-        #addCostButton:hover {
-            background-color: #0056b3;
-        }
-        .average-cost-display {
-            font-size: 1em;
-            font-weight: bold;
-            color: #1890ff;
-            margin-top: 10px;
-            padding: 5px;
-            border: 1px dashed #91d5ff;
-            border-radius: 4px;
-            background-color: #e6f7ff;
-            text-align: center; 
-        }
+        .cost-input-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .cost-input-row input[type="number"] { padding: 8px; flex: 1; min-width: 0; }
+        .cost-input-row .label-jpy { flex: 1.5; }
+        .cost-input-row .label-rate { flex: 1; }
+        .cost-input-row .remove-btn { background-color: #ff4d4f; color: white; border: none; border-radius: 4px; padding: 8px 10px; cursor: pointer; font-size: 0.9em; width: 30px; height: 38px; line-height: 20px; margin-left: 5px; }
+        .cost-input-row .remove-btn:hover { background-color: #d9363e; }
+        #addCostButton { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+        #addCostButton:hover { background-color: #0056b3; }
+        .average-cost-display { font-size: 1em; font-weight: bold; color: #1890ff; margin-top: 10px; padding: 5px; border: 1px dashed #91d5ff; border-radius: 4px; background-color: #e6f7ff; text-align: center; }
 
     </style>
 </head>
@@ -187,28 +125,29 @@
                     <span class="default-hint">(預設單一成本)</span>
                 </label>
                 
-                <div id="costInputsContainer">
-                    </div>
+                <div id="costInputsContainer"></div>
                 
                 <button id="addCostButton" onclick="addCostInput(50000, 0.1989, false)">+ 新增一筆買入紀錄</button> 
                 
-                <div id="averageCostDisplay" class="average-cost-display">
-                    </div>
-            </div>
-            <hr> <div class="input-group">
-                <label for="spotRate" class="input-label">
-                    <span class="spot-rate-label">提領日即期匯率 (牌告賣出) *</span>：
-                    <span class="default-hint">(預設值：0.1993 NTD/JPY)</span>
-                </label>
-                <input type="number" id="spotRate" value="0.1993" step="0.0001">
+                <div id="averageCostDisplay" class="average-cost-display"></div>
             </div>
             
+            <hr> 
+
             <div class="input-group">
                 <label for="cashRate" class="input-label">
-                    <span class="cash-rate-label">提領日現鈔匯率 (牌告賣出) *</span>：
+                    <span class="cash-rate-label">提領日現鈔匯率 (牌告現鈔賣出) *</span>：
                     <span class="default-hint">(預設值：0.2002 NTD/JPY)</span>
                 </label>
-                <input type="number" id="cashRate" value="0.2002" step="0.0001">
+                <input type="number" id="cashRate" value="0.2002" step="0.0001" style="background-color: #f0fff4; border-color: #28a745;">
+            </div>
+
+            <div class="input-group">
+                <label for="spotRate" class="input-label">
+                    <span class="spot-rate-label">提領日即期匯率 (牌告即期賣出) *</span>：
+                    <span class="default-hint">(預設值：0.1993 NTD/JPY)</span>
+                </label>
+                <input type="number" id="spotRate" value="0.1993" step="0.0001" style="background-color: #e6f7ff; border-color: #007bff;">
             </div>
             
             <div class="input-group">
@@ -231,8 +170,7 @@
             </div>
 
             <h3 id="resultTitle">計算結果 <span style="font-size:0.8em; color:#444;">(結果已即時更新)</span></h3>
-            <div id="resultsContainer">
-                </div>
+            <div id="resultsContainer"></div>
             
             <button id="copyButton" onclick="copyResults()">複製所有計算內容</button>
 
@@ -241,16 +179,14 @@
                 <span style="font-weight:normal; color:#cc0000; font-size:0.9em;">(台幣金額已四捨五入至整數)</span> 
                 <span id="toggleDetailBtn" class="toggle-btn" onclick="toggleContent('detailCalculation', 'toggleDetailBtn')">點此顯示</span>
             </p>
-            <div id="detailCalculation">
-                </div>
+            <div id="detailCalculation"></div>
 
             <p style="font-weight:bold; margin-bottom: 5px; margin-top: 15px;">
                 不同金額差價速算 (手續費攤提影響)
                 <span style="font-weight:normal; color:#cc0000; font-size:0.9em;">(結果已四捨五入至整數)</span> 
                 <span id="toggleQuickBtn" class="toggle-btn" onclick="toggleContent('quickDifference', 'toggleQuickBtn')">點此顯示</span>
             </p>
-            <div id="quickDifference">
-                </div>
+            <div id="quickDifference"></div>
 
         </div>
     </div>
@@ -258,22 +194,4 @@
     <p style="font-size:0.8em; color:#888; margin-top:20px;">
         * 請以台新銀行當日牌告賣出匯率為準。 <a href="https://richart.tw/TSDIB_RichartWeb/foreign-currency/demand-deposit?hash=sectionDiv1&offsetY=180" target="_blank">Richart 外幣匯率</a>
         <br>
-        ** ATM 據點資訊：** <a href="https://www.taishinbank.com.tw/TSB/service-and-support/atm-location/" target="_blank">台新銀行外幣 ATM 據點</a> (備註：外幣 ATM 提領日圓以 **¥5000** 面額為主)
-        <br>
-        ** 線上結匯資訊：**
-        <a href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank">臺灣銀行牌告匯率 (Easy購比較參考)</a>、
-        <a href="https://www.megabank.com.tw/personal/deposit-remittance/foreign-exchange/online-fx/online-fx-apply" target="_blank">兆豐銀行線上結匯 (megabank.com.tw)</a>
-    </p>
-    
-    <div id="disclaimer-footer">
-        **【免責聲明】** 此網頁僅供參考試算使用，所有計算結果不具任何法律效力或交易依據。
-        <span class="no-break">實際費用與匯率請以銀行牌告及交易當下系統計算為準，使用者須自行承擔準確性風險。</span>
-    </div>
-
-    <div class="version-info">
-        Version: 2.26 (優化多筆輸入模式：自動反白與提示) 版權所有@gemini 設計者 zeroffa
-    </div>
-
-    <script src="calculator.js"></script>
-</body>
-</html>
+        ** ATM 據點資訊：** <a href="
