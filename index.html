@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JPY Cost Calc</title>
+    <title>台新銀行ATM提領外幣手續費試算器</title>
+    <meta name="description" content="台新銀行(含Richart帳戶) ATM提領外幣(日圓)手續費試算器。計算納入手續費後的實際單位成本，並與其他銀行(如台銀Easy購)進行比較。">
+    <meta name="keywords" content="台新銀行, Richart, ATM, 外幣, 日圓, JPY, 手續費, 匯率, 成本試算">
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>💰 Richart 日圓提領成本試算器</h2>
+    <h2>💰 台新銀行(含Richart帳戶) 日圓提領成本試算器</h2>
     <p>試算提領日圓現鈔的實際手續費及攤提後總成本 (台幣/日圓)。結果會即時更新。</p>
     
     <div id="disclaimer">
@@ -88,7 +91,7 @@
             <h3 id="resultTitle">計算結果 <span style="font-size:0.8em; color:#444;">(結果已即時更新)</span></h3>
             <div id="resultsContainer"></div>
             
-            <button id="copyButton" onclick="copyResults()">複製所有計算內容</button>
+            <button id="copyButton" onclick="copyResults()">📋 複製全部結果</button> 
 
             <p class="detail-header">
                 詳細計算過程
@@ -123,7 +126,7 @@
     </div>
 
     <div class="version-info">
-        Version: 3.0 (結構優化：將樣式分離至 style.css) 版權所有@gemini 設計者 zeroffa
+        Version: 3.2 (功能更新：加入SEO、優化計算總成本顯示、更新銀行名稱) 版權所有@gemini 設計者 zeroffa
     </div>
 
     <script src="calculator.js"></script>
