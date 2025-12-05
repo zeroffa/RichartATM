@@ -1,6 +1,6 @@
 // 預先定義的速算金額列表
 const QUICK_AMOUNTS = [1000, 5000, 10000, 50000, 100000, 200000, 300000, 500000, 1000000, 2000000];
-const MIN_FEE = 100; // 最低手續費
+const MIN_FEE = 100; // 最低手續費 (註: 根據實務經驗可能更高，但程式中暫定為 100)
 let costInputCounter = 0; // 用於給每筆買入紀錄一個唯一的 ID
 
 /**
@@ -31,26 +31,36 @@ function formatCurrency(number, currencySymbol) {
 }
 
 /**
- * V2.20 修正：設定快速金額按鈕的值，並加入多筆成本計算時的警告。
+ * V2.20/V2.22 修正：設定快速金額按鈕的值，並加入多筆成本計算時的警告。
  * @param {number} value 要設定的日圓金額
- * @param {boolean} fromQuickButton 是否從快速按鈕觸發
+ * @param {boolean} fromQuickButton 是否從快速按鈕觸發 (true: 快速鍵, false: 自動同步)
+ * @param {boolean} isInternalUpdate 是否為內部自動更新 (true: 是，不需要彈出警告)
  */
-function setAmount(value, fromQuickButton = false) {
+function setAmount(value, fromQuickButton = false, isInternalUpdate = false) {
     const amountInput = document.getElementById('amount');
     
     // 檢查目前是否有超過一筆的買入成本紀錄
     const recordCount = document.querySelectorAll('.cost-input-row').length;
     
-    if (fromQuickButton && recordCount > 1) {
+    // 只有從快速按鈕觸發且紀錄大於 1 筆時，才彈出警告
+    if (fromQuickButton && !isInternalUpdate && recordCount > 1) {
         alert("【多筆日幣計算中】\n\n警告：您目前有多筆買入紀錄，正在計算加權平均成本。\n\n此快速按鈕僅更改上方的「本次提領日圓金額」，您的多筆買入成本紀錄不會被影響。");
     }
 
-    amountInput.value = value;
-    calculateCost(); // 觸發重新計算
+    // 只有當新的值與舊的值不同時才更新，避免無限循環或不必要的 DOM 操作
+    if (parseFloat(amountInput.value) !== value) {
+        amountInput.value = value;
+    }
+    
+    // 如果是內部更新，則由 getAverageCost 呼叫 calculateCost，此處不需要再次呼叫
+    if (!isInternalUpdate) {
+        calculateCost(); // 觸發重新計算
+    }
 }
 
 // 計算 Richart 提領的單一總成本 (用於速算)
 function calculateUnitCost(amount, cost, spotRate, cashRate) {
+    // V2.23 修正：初算手續費仍必須使用即期 - 現鈔的公式來判斷正負，再取 Max(MIN_FEE)
     const feePreliminary = amount * (spotRate - cashRate) * 0.5;
     const actualFee = Math.max(MIN_FEE, feePreliminary);
     const totalOriginalCost = amount * cost;
@@ -171,7 +181,9 @@ function removeCostInput(id) {
 }
 
 /**
- * V2.17/V2.20 修正：計算所有買入紀錄的加權平均成本，並根據筆數調整顯示名稱和顏色。
+ * V2.17/V2.22 修正：
+ * 1. 計算所有買入紀錄的加權平均成本，並根據筆數調整顯示名稱和顏色。
+ * 2. 如果是多筆紀錄 (validRecords > 1)，則自動將 totalJPY 同步到提領金額欄位。
  * @returns {object} {averageCost: number, totalJPY: number, recordCount: number}
  */
 function getAverageCost() {
@@ -207,6 +219,12 @@ function getAverageCost() {
         costTitle = "加權平均成本";
         // V2.18: 修正提示文字
         titleElement.innerHTML = `日圓買入成本紀錄 (分批買入計算**加權平均成本**) <span class="default-hint">(請輸入您手上所有日圓的買入紀錄)</span>`;
+        
+        // V2.22 修正：當有多筆紀錄時，自動將總額同步到提領金額欄位
+        if (totalJPY > 0) {
+             // 傳遞 isInternalUpdate = true，避免觸發警告，且不呼叫 calculateCost
+            setAmount(totalJPY, false, true); 
+        }
     } else {
         costTitle = "單一買進成本";
         // V2.18: 修正提示文字
@@ -276,8 +294,6 @@ function updateQuickDifference(cost, spotRate, cashRate, compareRate) {
         <p style="font-size:0.8em;">(使用匯率：${costTitle} **${cost.toFixed(6)}** / 即期 **${spotRate.toFixed(4)}** / 現鈔 **${cashRate.toFixed(4)}**)</p>
         ${tableHtml}
     `;
-    
-    // V2.21 修正：移除計算時強制顯示 quickDifference 的邏輯，讓它保持被 toggle 的狀態
 }
 
 
@@ -288,15 +304,18 @@ function calculateCost() {
     const cashRate = parseFloat(document.getElementById('cashRate').value);
     const compareRate = parseFloat(document.getElementById('compareRate').value); 
     
-    // V2.17 變更：取得加權平均成本及其名稱
+    // V2.17/V2.22 變更：取得加權平均成本。
     const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost();
     
     const resultsContainer = document.getElementById('resultsContainer');
     const detailCalculation = document.getElementById('detailCalculation');
     const quickDifference = document.getElementById('quickDifference');
     
+    // 重新從 DOM 取得 amount 的值 (如果剛被 getAverageCost() 更新了)
+    const finalAmount = parseFloat(document.getElementById('amount').value);
+
     // 簡單的輸入驗證 (需檢查平均成本是否有效)
-    if (isNaN(amount) || amount <= 0 || isNaN(cost) || isNaN(spotRate) || isNaN(cashRate) || isNaN(compareRate)) {
+    if (isNaN(finalAmount) || finalAmount <= 0 || isNaN(cost) || isNaN(spotRate) || isNaN(cashRate) || isNaN(compareRate)) {
         resultsContainer.innerHTML = `<p style="color:red;">請檢查提領金額及所有匯率/成本數值是否正確填寫。</p>`;
         detailCalculation.innerHTML = '<p style="color:red;">請先填寫正確匯率及至少一筆有效的買入成本紀錄。</p>';
         quickDifference.innerHTML = `<p style="color:red; font-size:0.9em;">請先填寫正確匯率及成本。</p>`;
@@ -306,41 +325,64 @@ function calculateCost() {
         return;
     }
 
-    // V2.21 修正：移除計算時對 toggle 狀態的檢查和設定，讓它保持被 toggle 的狀態
     
     // --- Richart 手續費計算 ---
-    const feePreliminary = amount * (spotRate - cashRate) * 0.5;
-    const actualFee = Math.max(MIN_FEE, feePreliminary);
+    // 公式 B (即期 - 現鈔)，用於判斷正負號和是否觸發最低費用
+    const feePreliminary_raw = finalAmount * (spotRate - cashRate) * 0.5;
+    // 公式 A (現鈔 - 即期) * 0.5，用於顯示計算基礎 ( V2.23 新增)
+    const rateDifference_positive = cashRate - spotRate;
+    const feePreliminary_positive = finalAmount * rateDifference_positive * 0.5;
     
-    // 判斷是否會收最低手續費的文字提示 (用於簡要結果)
+    // 實際手續費：取 Max(MIN_FEE, feePreliminary_raw)
+    const actualFee = Math.max(MIN_FEE, feePreliminary_raw);
+    
+    
+    // --- V2.24 修正：判斷是否會收最低手續費的文字提示 (用於簡要結果) ---
     let feeNoteSimple = ``;
     if (actualFee === MIN_FEE) {
-        feeNoteSimple = `<span style="color:#cc0000; font-weight:bold; font-size:0.9em;"> (會收最低手續費 NT$${MIN_FEE})</span>`;
+        feeNoteSimple = `<span style="color:#cc0000; font-weight:bold; font-size:0.9em;"> (會收最低手續費 NT$${MIN_FEE}，或可能更高)</span>`; // V2.23 修正提示
     }
 
-    // 判斷是否會收最低手續費的文字提示 (用於詳細計算)
+    // --- V2.24 修正：判斷是否會收最低手續費的文字提示 (用於詳細計算) ---
     let feeNoteDetail = ``;
-    // V2.20 修正：處理即期 < 現鈔時 feePreliminary 為負數的情況
-    if (feePreliminary < 0) {
-        feeNoteDetail = `<p style="margin-left: 10px; color:#cc0000; font-weight:bold;">→ 初算金額為負值，但根據規定，最低仍會收取 NT$${MIN_FEE} 手續費。</p>`;
-    } else if (actualFee === MIN_FEE) {
-        const difference = MIN_FEE - feePreliminary;
-        feeNoteDetail = `<p style="margin-left: 10px; color:#cc0000; font-weight:bold;">→ 初算金額 ${formatCurrency(feePreliminary, 'NT$')} 低於 NT$${MIN_FEE}，故會收最低手續費。 (被多收 ${formatCurrency(difference, 'NT$')})</p>`;
+    
+    if (feePreliminary_raw > 0 && feePreliminary_raw < MIN_FEE) {
+        // 情況二：初算手續費 > 0 但 < 100
+        const difference = MIN_FEE - feePreliminary_raw;
+        // 顯示初算金額 feePreliminary_positive (這應與 feePreliminary_raw 的絕對值相同)
+        feeNoteDetail = `
+            <p style="margin-left: 10px; color:#cc0000; font-weight:bold;">
+                → 初算金額 ${formatCurrency(feePreliminary_positive, 'NT$')}
+                <span style="font-weight:normal;">(約 ${feePreliminary_positive.toFixed(2)} 元)</span> 
+                **不足 NT$${MIN_FEE}**，故會以最低手續費計收 (或更高)。
+                (被多收 ${formatCurrency(difference, 'NT$')})
+            </p>
+        `;
+    } else if (feePreliminary_raw <= 0) {
+        // 情況三：初算手續費 <= 0 (即期 < 現鈔，或即期 = 現鈔)
+        feeNoteDetail = `
+            <p style="margin-left: 10px; color:#cc0000; font-weight:bold;">
+                → 初算金額為負值或零，根據規定，最低仍會收取 **NT$${MIN_FEE}** 手續費 (或更高)。
+            </p>
+        `;
+    } else {
+        // 情況一：初算手續費 >= 100
+        // 不需額外提示
     }
 
 
     // --- Richart 總成本計算 ---
-    const totalOriginalCost = amount * cost; 
+    const totalOriginalCost = finalAmount * cost; 
     const totalExpense = totalOriginalCost + actualFee;
-    const totalCostPerUnit = totalExpense / amount;
+    const totalCostPerUnit = totalExpense / finalAmount;
 
     // --- 外部結匯成本比較 ---
-    const externalCost = amount * compareRate;
+    const externalCost = finalAmount * compareRate;
     const savings = externalCost - totalExpense;
 
     // 6. 更新簡要結果
     resultsContainer.innerHTML = `
-        <p>實際提領手續費：<span class="result-value">${formatCurrency(actualFee, 'NT$')}</span> ${feeNoteSimple}</p>
+        <p>實際提領手續費 (預估)：<span class="result-value">${formatCurrency(actualFee, 'NT$')}</span> ${feeNoteSimple}</p>
         <p>納入手續費後，日圓**單位總成本**：<span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
         <hr>
         <p>台銀 Easy購總成本 (匯率 ${compareRate.toFixed(4)})：<span class="result-value">${formatCurrency(externalCost, 'NT$')}</span></p>
@@ -351,16 +393,17 @@ function calculateCost() {
     detailCalculation.innerHTML = `
         <p style="font-weight:bold; margin-bottom: 5px;">【詳細計算過程】</p>
         <p>1. **${costTitle}**： <span class="final-cost">${cost.toFixed(6)}</span> 台幣/日圓</p>
-        <p>2. 原始換匯成本： ${formatCurrency(amount, '¥')} × ${cost.toFixed(6)} (平均成本) = ${formatCurrency(totalOriginalCost, 'NT$')}</p>
-        <p>3. 匯率差額： ${spotRate.toFixed(4)} (即期賣) - ${cashRate.toFixed(4)} (現鈔賣) = ${(spotRate - cashRate).toFixed(4)}</p>
-        <p>4. **初算手續費**： ${formatCurrency(amount, '¥')} × ${(spotRate - cashRate).toFixed(4)} × 0.5 = <span class="result-value">${formatCurrency(feePreliminary, 'NT$')}</span></p>
+        <p>2. 原始換匯成本： ${formatCurrency(finalAmount, '¥')} × ${cost.toFixed(6)} (平均成本) = ${formatCurrency(totalOriginalCost, 'NT$')}</p>
+        <p>3. **匯率價差基礎 (現鈔比即期貴多少)**： ${cashRate.toFixed(4)} (現鈔賣) - ${spotRate.toFixed(4)} (即期賣) = **${rateDifference_positive.toFixed(4)}**</p>
+        <p>4. **初算手續費 (公式 A)**： ${formatCurrency(finalAmount, '¥')} × ${rateDifference_positive.toFixed(4)} (價差基礎) × 0.5 = <span class="result-value">${formatCurrency(feePreliminary_positive, 'NT$')}</span></p>
+        <p style="margin-left: 20px; font-size: 0.85em; color: #888;">**公式 B 參考**： 提領金額 $\times (\text{即期賣} - \text{現鈔賣}) \times 0.5$ (此計算結果為 ${formatCurrency(feePreliminary_raw, 'NT$')}，用於判斷是否觸發最低費用)</p>
         ${feeNoteDetail}
-        <p>5. **實際手續費**： <span class="result-value">${formatCurrency(actualFee, 'NT$')}</span></p>
+        <p>5. **實際提領手續費 (預估)**： Max(${formatCurrency(feePreliminary_raw, 'NT$')}, NT$${MIN_FEE}) = <span class="result-value">${formatCurrency(actualFee, 'NT$')}</span></p>
         <p>6. **總支出**： ${formatCurrency(totalOriginalCost, 'NT$')} (原始成本) + ${formatCurrency(actualFee, 'NT$')} (手續費) = ${formatCurrency(totalExpense, 'NT$')}</p>
-        <p>7. 攤提成本： ${formatCurrency(totalExpense, 'NT$')} ÷ ${formatCurrency(amount, '¥')} = <span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
+        <p>7. 攤提成本： ${formatCurrency(totalExpense, 'NT$')} ÷ ${formatCurrency(finalAmount, '¥')} = <span class="final-cost">${totalCostPerUnit.toFixed(6)}</span> 台幣/日圓</p>
         <hr>
         <p style="font-weight:bold; margin-bottom: 5px;">【台銀 Easy購比較計算】</p>
-        <p>8. 台銀 Easy購總成本： ${formatCurrency(amount, '¥')} × ${compareRate.toFixed(4)} = ${formatCurrency(externalCost, 'NT$')}</p>
+        <p>8. 台銀 Easy購總成本： ${formatCurrency(finalAmount, '¥')} × ${compareRate.toFixed(4)} = ${formatCurrency(externalCost, 'NT$')}</p>
         <p>9. 淨節省金額： ${formatCurrency(externalCost, 'NT$')} (台銀) - ${formatCurrency(totalExpense, 'NT$')} (Richart) = <span class="final-savings">${formatCurrency(savings, 'NT$')}</span></p>
     `;
     
@@ -377,9 +420,12 @@ function copyResults() {
     // V2.17 取得加權平均成本及其名稱
     const { averageCost: cost, totalJPY: totalJPY, costTitle } = getAverageCost(); 
     
+    // 確保提領金額是最新值 (可能剛被同步)
+    const finalAmount = parseFloat(document.getElementById('amount').value);
+
     // 更新複製內容中的版本資訊
-    let fullText = `--- JPY Cost Calc 結算結果 (V2.21) 版權所有@gemini 設計者 zeroffa ---\n` +
-                     `提領日圓金額: ${formatCurrency(parseFloat(document.getElementById('amount').value), '¥')}\n` +
+    let fullText = `--- JPY Cost Calc 結算結果 (V2.24) 版權所有@gemini 設計者 zeroffa ---\n` +
+                     `本次提領日圓金額: ${formatCurrency(finalAmount, '¥')}\n` +
                      `總買入日圓金額: ${formatCurrency(totalJPY, '¥')}\n` + 
                      `**${costTitle}**: ${cost.toFixed(6)} NTD/JPY\n` + 
                      `即期匯率: ${document.getElementById('spotRate').value} / 現鈔匯率: ${document.getElementById('cashRate').value}\n` +
